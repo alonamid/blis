@@ -140,8 +140,8 @@ CFLAGS         += -Wno-maybe-uninitialized -Wno-parentheses -Wfatal-errors \
 
 # Override the location of the check-blastest.sh script.
 #BLASTEST_CHECK := ./check-blastest.sh
-
-TESTSUITE_WRAPPER       ?=
+SPIKEARGS               :=
+TESTSUITE_WRAPPER       ?= spike $(SPIKEARGS) pk
 
 #
 # --- Targets/rules ------------------------------------------------------------
