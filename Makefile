@@ -364,9 +364,8 @@ MK_TESTSUITE_OBJS       := $(sort \
 # unusual environments (e.g. ARM) can run the testsuite through some other
 # binary. See .travis.yml for details on how the variable is employed in
 # practice.
-SPIKEARGS               ?=
 TESTSUITE_BIN           := test_$(LIBBLIS).x
-TESTSUITE_WRAPPER       ?= spike $(SPIKEARGS) pk 
+TESTSUITE_WRAPPER       ?=
 
 # The location of the script that checks the BLIS testsuite output.
 TESTSUITE_CHECK_PATH    := $(DIST_PATH)/$(TESTSUITE_DIR)/$(TESTSUITE_CHECK)
