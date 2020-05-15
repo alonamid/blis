@@ -1,3 +1,28 @@
+Notes for building for RISC-V
+------------------------------
+
+The build for RISC-V-based testing using the RISC-V GNU toolchain:
+
+```
+# configure to statically build for riscv64
+./configure CC=riscv64-unknown-linux-gnu-gcc CFLAGS=-static LDFLAGS=-static --disable-threading --disable-pba-pools --disable-sba-pools --disable-shared riscv64
+# build library
+make
+# build tests
+make testsuite-bin
+make blastest-bin
+```
+
+Since blis requires pthreads, `pk` cannot be used for testing.
+If you do have a proxy-kernel with further support for multithreading, it may be useful to use the `TESTSUITE_WRAPPER` Make parameter test outside of a Linux environment:
+```
+make check TESTSUITE_WRAPPER="spike pk"
+```
+
+
+----------------------------------------------------------------------------------------------
+
+
 ![The BLIS cat is sleeping.](http://www.cs.utexas.edu/users/field/blis_cat.png)
 
 [![Build Status](https://travis-ci.org/flame/blis.svg?branch=master)](https://travis-ci.org/flame/blis)
