@@ -211,6 +211,12 @@ CNTX_INIT_PROTS( generic )
 #include "bli_family_bgq.h"
 #endif
 
+// -- RISCV 64 --
+
+#ifdef BLIS_FAMILY_RISCV64
+#include "bli_family_riscv64.h"
+#endif
+
 // -- Generic --
 
 #ifdef BLIS_FAMILY_GENERIC

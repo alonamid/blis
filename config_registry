@@ -42,5 +42,8 @@ cortexa9:    cortexa9/armv7a
 power9:      power9
 bgq:         bgq
 
+# RISC-V architectures.
+riscv64:      generic
+
 # Generic architectures.
 generic:     generic

@@ -157,6 +157,11 @@ void bli_arch_set_id( void )
 	id = BLIS_ARCH_BGQ;
 #endif
 
+	// RISC-V microarchitectures.
+#ifdef BLIS_FAMILY_RISCV64
+	id = BLIS_ARCH_GENERIC; //temporary. Until specification of actual uarch
+#endif
+
 	// Generic microarchitecture.
 #ifdef BLIS_FAMILY_GENERIC
 	id = BLIS_ARCH_GENERIC;
