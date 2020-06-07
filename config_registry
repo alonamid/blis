@@ -43,7 +43,8 @@ power9:      power9
 bgq:         bgq
 
 # RISC-V architectures.
-riscv64:      generic
+riscv64:	gemmini generic
+gemmini:	gemmini
 
 # Generic architectures.
 generic:     generic

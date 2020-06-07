@@ -114,6 +114,13 @@ CNTX_INIT_PROTS( power7 )
 CNTX_INIT_PROTS( bgq )
 #endif
 
+// -- RISC-V --
+
+#ifdef BLIS_CONFIG_GEMMINI
+CNTX_INIT_PROTS( gemmini )
+#endif
+
+
 // -- Generic --
 
 #ifdef BLIS_CONFIG_GENERIC
@@ -217,6 +224,10 @@ CNTX_INIT_PROTS( generic )
 #include "bli_family_riscv64.h"
 #endif
 
+#ifdef BLIS_FAMILY_GEMMINI
+#include "bli_family_gemmini.h"
+#endif
+
 // -- Generic --
 
 #ifdef BLIS_FAMILY_GENERIC
@@ -296,7 +307,11 @@ CNTX_INIT_PROTS( generic )
 #include "bli_kernels_bgq.h"
 #endif
 
+// -- RISC-V --
 
+#ifdef BLIS_KERNELS_GEMMINI
+#include "bli_kernels_gemmini.h"
+#endif
 
 #endif
 

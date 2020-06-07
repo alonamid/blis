@@ -161,6 +161,9 @@ void bli_arch_set_id( void )
 #ifdef BLIS_FAMILY_RISCV64
 	id = BLIS_ARCH_GENERIC; //temporary. Until specification of actual uarch
 #endif
+#ifdef BLIS_FAMILY_GEMMINI
+	id = BLIS_ARCH_GEMMINI;
+#endif
 
 	// Generic microarchitecture.
 #ifdef BLIS_FAMILY_GENERIC
