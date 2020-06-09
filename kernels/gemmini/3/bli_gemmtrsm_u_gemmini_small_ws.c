@@ -4,7 +4,7 @@
    An object-based framework for developing high-performance BLAS-like
    libraries.
 
-   Copyright (C) 2019, The University of Texas at Austin
+   Copyright (C) 2014, The University of Texas at Austin
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -30,16 +30,68 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 */
 
-// -- level-3 --
+#include "blis.h"
 
-// gemm (asm d12x6)
-GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
-TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
-TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
-//GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
-//GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
-//GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
+void bli_sgemmtrsm_l_gemmini_small_ws
+     (
+       dim_t               k,
+       float*    restrict alpha,
+       float*    restrict a10,
+       float*    restrict a11,
+       float*    restrict b01,
+       float*    restrict b11,
+       float*    restrict c11, inc_t rs_c, inc_t cs_c,
+       auxinfo_t* restrict data,
+       cntx_t*    restrict cntx
+     )
+{
+
+	const num_t        dt     = BLIS_FLOAT;
+
+	//const dim_t        mr     = bli_cntx_get_blksz_def_dt( dt, BLIS_MR, cntx );
+	//const dim_t        nr     = bli_cntx_get_blksz_def_dt( dt, BLIS_NR, cntx );
+
+	//const inc_t        packmr = bli_cntx_get_blksz_max_dt( dt, BLIS_MR, cntx );
+	const inc_t        packnr = bli_cntx_get_blksz_max_dt( dt, BLIS_NR, cntx );
+
+	//const inc_t        cs_a   = packmr;
+	const inc_t        rs_b   = packnr;
+        const inc_t        cs_b   = 1;
+
+
+        float* restrict minus_one = bli_sm1;
+
+
+        /* b11 = alpha * b11 - a10 * b01; */
+        bli_sgemm_gemmini_small_ws
+        (
+          k,
+          minus_one,
+          a10,
+          b01,
+          alpha,
+          b11, rs_b, cs_b,
+          data,
+          cntx
+        );
+
+        /* b11 = inv(a11) * b11;
+           c11 = b11; */
+        bli_strsm_l_gemmini_small
+        (
+          a11,
+          b11,
+          c11, rs_c, cs_c,
+          data,
+          cntx
+        );
+
+
+
+
+
+
+}

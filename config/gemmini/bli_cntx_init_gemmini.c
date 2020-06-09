@@ -53,10 +53,18 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	bli_cntx_set_l3_nat_ukrs
 	(
 	  //0,
-	  1,
+	  5,
 	  // gemm
 	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_os,            TRUE,
 	  //BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_ws,            TRUE,
+          //trsm
+          BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_gemmini_small,             TRUE,
+          BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_gemmini_small,             TRUE,
+          //gemmtrsm
+          BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_os,      TRUE,
+          BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_os,      TRUE,
+          //BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_ws,      TRUE,
+          //BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_ws,      TRUE,
 	  cntx
 	);
 
