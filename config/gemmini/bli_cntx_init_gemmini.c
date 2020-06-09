@@ -34,6 +34,10 @@
 */
 
 #include "blis.h"
+#include "include/gemmini_params.h"
+//need to make sure that all variable declarations in gemmini_params.h
+//are static const, otherwise there will be linker issues
+
 
 void bli_cntx_init_gemmini( cntx_t* cntx )
 {
@@ -70,24 +74,41 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	  cntx
 	);
 
+#define partition_rows (BANK_NUM * BANK_ROWS / 2)
+#define mats_in_partition (partition_rows / DIM)
+#define mats_in_acc (ACC_ROWS / DIM)
+#define max_tile_i_j ((size_t)sqrt(mats_in_acc))
+#define max_tile_k (mats_in_partition / max_tile_i_j)
+
 	// Initialize level-3 blocksize objects with architecture-specific values.
-	//                                           s      d      c      z
-	bli_blksz_init_easy( &blkszs[ BLIS_MR ],     4,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NR ],     4,     0,     0,     0 );
+	//                                               s      d      c      z
+        //register blocking (array size)
+	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
 
-	bli_blksz_init_easy( &blkszs[ BLIS_MC ],     4,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_KC ],     4,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NC ],     4,     0,     0,     0 );
+        //cache blocking (scratchpad size)
+        //TODO (Alon): Consider blocking based on L2 size rather than scratchpad size?
+	bli_blksz_init_easy( &blkszs[ BLIS_MC ],max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_KC ],  max_tile_k,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NC ],max_tile_i_j,     0,     0,     0 );
 
-	bli_blksz_init_easy( &blkszs[ BLIS_AF ],     4,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_DF ],     4,     0,     0,     0 );
+	// level-1f
+	//bli_blksz_init_easy( &blkszs[ BLIS_AF ],         0,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_DF ],         0,     0,     0,     0 );
+
+#undef partition_rows
+#undef mats_in_partition
+#undef mats_in_acc
+#undef max_tile_i_j
+#undef max_tile_k
 
 	// Update the context with the current architecture's register and cache
 	// blocksizes (and multiples) for native execution.
 	bli_cntx_set_blkszs
 	(
 	  //BLIS_NAT, 0,
-	  BLIS_NAT, 7,
+	  //BLIS_NAT, 7,
+	  BLIS_NAT, 5,
 	  // level-3
 	  BLIS_NC, &blkszs[ BLIS_NC ], BLIS_NR,
 	  BLIS_KC, &blkszs[ BLIS_KC ], BLIS_KR,
@@ -95,8 +116,8 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	  BLIS_NR, &blkszs[ BLIS_NR ], BLIS_NR,
 	  BLIS_MR, &blkszs[ BLIS_MR ], BLIS_MR,
 	  // level-1f
-	  BLIS_AF, &blkszs[ BLIS_AF ], BLIS_AF,
-	  BLIS_DF, &blkszs[ BLIS_DF ], BLIS_DF,
+	  //BLIS_AF, &blkszs[ BLIS_AF ], BLIS_AF,
+	  //BLIS_DF, &blkszs[ BLIS_DF ], BLIS_DF,
 	  cntx
 	);
 }
