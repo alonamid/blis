@@ -93,8 +93,19 @@ void bli_sgemm_gemmini_small_os
         //printf("a: %p, b: %p, c: %p\n", a, b, c);
         //printf("cs_a: %d, rs_b: %d, cs_c0: %d, rs_c0: %d\n", cs_a, rs_b, cs_c0, rs_c0);
         //printf("alpha: %f, beta: %f\n", *alpha, *beta);
-
-
+/*
+        printf("===Manual Result C====\n");
+        for (int i=0; i<mr; i++) {
+         for (int j=0; j<nr; j++) {
+           float cval = *beta * *(c + i*rs_c0 + j*cs_c0);  
+           for (int k=0; k<k0; k++) {
+             cval += *alpha * *(a + k*cs_a + i) * *(b + k*rs_b + j); 
+           }
+           printf("%f ", cval);
+          }
+          printf("\n");
+        }
+*/
         //==============Gemmini Specific Code======================
         //we want mr=DIM and nr=DIM
         //k0 is unbounded
@@ -283,6 +294,8 @@ void bli_sgemm_gemmini_small_os
             }
           }
         
+          gemmini_fence();
+
           // Move-out C
           if (C != NULL) {
             for (size_t i = 0; i < I; i++) {
@@ -323,7 +336,15 @@ void bli_sgemm_gemmini_small_os
             true, false,
             OS);
 */
-
+/*
+        printf("===Gemmini Result C====\n");
+        for (int i=0; i<mr; i++) {
+         for (int j=0; j<nr; j++) {
+           printf("%f ", *(c + i*rs_c0 + j*cs_c0));
+          }
+          printf("\n");
+        }
+*/
       }
 
 }

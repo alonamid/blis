@@ -285,6 +285,8 @@ void bli_sgemm_gemmini_small_ws
               }
             }
           }
+
+          gemmini_fence();
         
           // Move-out C
           if (C != NULL) {
