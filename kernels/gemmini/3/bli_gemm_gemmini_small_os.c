@@ -210,6 +210,7 @@ void bli_sgemm_gemmini_small_os
 
                 //mini transpose if column-major
                 if (C_column_major) {
+                   gemmini_fence();
                    bli_scopys_mxn( mr,
                                 nr,
                                 (acc_t *)D + (bias_row * D_row_stride + j)*DIM,  rs_c0, cs_c0,
@@ -222,7 +223,7 @@ void bli_sgemm_gemmini_small_os
               }
             }
           }
-            
+
           // Move-in B
           gemmini_extended_config_ld(B_row_stride * sizeof(elem_t), B_scale_factor);
           for (size_t j = 0; j < J; j += B_blocks) {
@@ -310,6 +311,7 @@ void bli_sgemm_gemmini_small_os
 
                 //mini transpose if column-major
                 if (C_column_major) {
+                  gemmini_fence();
                   bli_scopys_mxn( mr,
                                 nr,
                                 (acc_t*)C_transpose,  DIM, 1,

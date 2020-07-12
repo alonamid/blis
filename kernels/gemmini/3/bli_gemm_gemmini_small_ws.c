@@ -199,6 +199,7 @@ void bli_sgemm_gemmini_small_ws
 
                 //mini transpose if column-major
                 if (C_column_major) {
+                   gemmini_fence();
                    bli_scopys_mxn( mr,
                                 nr,
                                 (acc_t *)D + (bias_row * D_row_stride + j)*DIM,  rs_c0, cs_c0,
@@ -302,6 +303,7 @@ void bli_sgemm_gemmini_small_ws
 
                 //mini transpose if column-major
                 if (C_column_major) {
+                  gemmini_fence();
                   bli_scopys_mxn( mr,
                                 nr,
                                 (acc_t*)C_transpose,  DIM, 1,
