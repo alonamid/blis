@@ -321,7 +321,7 @@ void bli_sgemm_gemmini_small_os
         }
         
         //fence because D and C are the same memory region
-        gemmini_fence();
+        //gemmini_fence();
 
 /*
          tiled_matmul(mr, nr, k0,

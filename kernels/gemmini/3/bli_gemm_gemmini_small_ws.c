@@ -313,7 +313,7 @@ void bli_sgemm_gemmini_small_ws
         }
 
         //fence because D and C are the same memory region
-        gemmini_fence();
+        //gemmini_fence();
         
 
 /*
