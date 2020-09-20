@@ -168,6 +168,42 @@ void bli_sgemm_gemmini_small_os
         gemmini_extended_config_ex(OS, NO_ACTIVATION, 0, 0, 0, 1, true, false);
         gemmini_config_st(C_row_stride * sizeof(elem_t));
 
+        const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
+        const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
+        const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
+
+        // Move-in D
+        if (D != NULL && !no_bias) {
+          const size_t D_stride = D_row_stride * sizeof(acc_t);
+          gemmini_extended_config_ld(D_stride, D_scale_factor);
+
+          for (size_t i = 0; i < I; i++) {
+            for (size_t j = 0; j < J; j += D_blocks) {
+              const size_t bias_row = i;
+              const acc_t * D_dram_addr = (acc_t *)D + (bias_row * D_row_stride + j)*DIM;
+
+              const uint32_t D_sp_addr_acc = D_sp_addr_start + (i*J + j)*DIM;
+
+              size_t blocks = j + D_blocks <= J ? D_blocks : J-j;
+              const size_t cols = blocks * DIM - (j + blocks >= J ? pad_J : 0);
+              const size_t rows = DIM - (i == I-1 ? pad_I : 0);
+
+              //mini transpose if column-major
+              if (C_column_major) {
+                 gemmini_fence();
+                 bli_scopys_mxn( mr,
+                              nr,
+                              (acc_t *)D + (bias_row * D_row_stride + j)*DIM,  rs_c0, cs_c0,
+                              (elem_t*)D_transpose, DIM,  1 );
+
+                 D_dram_addr = (acc_t *)D_transpose;
+              }
+
+              gemmini_extended_mvin(D_dram_addr, D_sp_addr_acc, cols, rows);
+            }
+          }
+        }
+
 
         //split K into tiles, since k0 is not bounded
         for (size_t K0 = 0; K0 < K_num_tiles*tile_K; K0+=tile_K) {
@@ -175,60 +211,23 @@ void bli_sgemm_gemmini_small_os
           const size_t K = K0 < (K_num_tiles-1)*tile_K ? tile_K : last_K;
           const size_t pad_K = K0 == (K_num_tiles-1)*tile_K ? padding_K : 0;
 
-
           // re-implement sp_tiled_matmul_os
           // without row-major assumption
           // and assuming A is transposed
 
           const uint32_t A_sp_addr_start = 0;
           const uint32_t B_sp_addr_start = BANK_NUM * BANK_ROWS - K * J * DIM;
-          const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
-          const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
 
           //TODO: update this after Hasan updates the row stride to be able to load more than just DIM 
           //const int A_blocks = K <= MAX_BLOCK_LEN ? K : MAX_BLOCK_LEN;
           const int A_blocks = K <= 1 ? K : 1;
           const int B_blocks = J <= MAX_BLOCK_LEN ? J : MAX_BLOCK_LEN;
-          const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
-
-
-          // Move-in D
-          if (D != NULL && !no_bias) {
-            const size_t D_stride = D_row_stride * sizeof(acc_t);
-            gemmini_extended_config_ld(D_stride, D_scale_factor);
-  
-            for (size_t i = 0; i < I; i++) {
-              for (size_t j = 0; j < J; j += D_blocks) {
-                const size_t bias_row = i;
-                const acc_t * D_dram_addr = (acc_t *)D + (bias_row * D_row_stride + j)*DIM;
-        
-                const uint32_t D_sp_addr_acc = D_sp_addr_start + (i*J + j)*DIM;
-        
-                size_t blocks = j + D_blocks <= J ? D_blocks : J-j;
-                const size_t cols = blocks * DIM - (j + blocks >= J ? pad_J : 0);
-                const size_t rows = DIM - (i == I-1 ? pad_I : 0);
-
-                //mini transpose if column-major
-                if (C_column_major) {
-                   gemmini_fence();
-                   bli_scopys_mxn( mr,
-                                nr,
-                                (acc_t *)D + (bias_row * D_row_stride + j)*DIM,  rs_c0, cs_c0,
-                                (elem_t*)D_transpose, DIM,  1 );
-        
-                   D_dram_addr = (acc_t *)D_transpose;
-                }
-                
-                gemmini_extended_mvin(D_dram_addr, D_sp_addr_acc, cols, rows);
-              }
-            }
-          }
 
           // Move-in B
           gemmini_extended_config_ld(B_row_stride * sizeof(elem_t), B_scale_factor);
           for (size_t j = 0; j < J; j += B_blocks) {
             for (size_t k = 0; k < K; k++) {
-              const elem_t * const B_dram_addr = B + (k*B_row_stride + j)*DIM;
+              const elem_t * const B_dram_addr = B + ((k + K0)*B_row_stride + j)*DIM;
               const uint32_t B_sp_addr = B_sp_addr_start + (k*J + j)*DIM;
               const size_t blocks = j + B_blocks <= J ? B_blocks : J-j;
               const size_t cols = blocks * DIM - (j + blocks >= J ? pad_J : 0);
@@ -248,7 +247,7 @@ void bli_sgemm_gemmini_small_os
               //const size_t cols = blocks * DIM - (k + blocks >= K ? pad_K : 0);
               //const size_t rows = DIM - (i == I-1 ? pad_I : 0);
               //new
-              const elem_t * const A_dram_addr = A + (k * A_row_stride + i)*DIM;
+              const elem_t * const A_dram_addr = A + ((k + K0) * A_row_stride + i)*DIM;
               const uint32_t A_sp_addr = A_sp_addr_start + (k*I + i)*DIM;
               const size_t blocks = i + A_blocks <= I ? A_blocks : I-i;
               const size_t cols = blocks * DIM - (i + blocks >= I ? pad_I : 0);
@@ -294,38 +293,35 @@ void bli_sgemm_gemmini_small_os
               }
             }
           }
-        
-          gemmini_fence();
+        }
 
-          // Move-out C
-          if (C != NULL) {
-            for (size_t i = 0; i < I; i++) {
-              for (size_t j = 0; j < J; j++) {
-                elem_t * const C_dram_addr = C_column_major ? (elem_t*)(&C_transpose) : C + (i*C_row_stride + j)*DIM;
-                const uint32_t C_sp_addr = C_sp_addr_start + (i*J + j)*DIM;
+        // Move-out C
+        if (C != NULL) {
+          for (size_t i = 0; i < I; i++) {
+            for (size_t j = 0; j < J; j++) {
+              elem_t * const C_dram_addr = C_column_major ? (elem_t*)(&C_transpose) : C + (i*C_row_stride + j)*DIM;
+              const uint32_t C_sp_addr = C_sp_addr_start + (i*J + j)*DIM;
  
-                const size_t C_cols = DIM - (j == J - 1 ? pad_J : 0);
-                const size_t C_rows = DIM - (i == I - 1 ? pad_I : 0);
+              const size_t C_cols = DIM - (j == J - 1 ? pad_J : 0);
+              const size_t C_rows = DIM - (i == I - 1 ? pad_I : 0);
         
-                gemmini_extended_mvout(C_dram_addr, C_sp_addr, C_cols, C_rows);
+              gemmini_extended_mvout(C_dram_addr, C_sp_addr, C_cols, C_rows);
 
-                //mini transpose if column-major
-                if (C_column_major) {
-                  gemmini_fence();
-                  bli_scopys_mxn( mr,
-                                nr,
-                                (acc_t*)C_transpose,  DIM, 1,
-                                C + (i*C_row_stride + j)*DIM, rs_c0,  cs_c0 );
+              //mini transpose if column-major
+              if (C_column_major) {
+                gemmini_fence();
+                bli_scopys_mxn( mr,
+                              nr,
+                              (acc_t*)C_transpose,  DIM, 1,
+                              C + (i*C_row_stride + j)*DIM, rs_c0,  cs_c0 );
 
-                }
               }
             }
           }
-
-          gemmini_fence();
-
         }
         
+        //fence because D and C are the same memory region
+        gemmini_fence();
 
 /*
          tiled_matmul(mr, nr, k0,
