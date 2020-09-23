@@ -35,13 +35,13 @@
 
 #include "blis.h"
 
-void bli_sgemmtrsm_l_gemmini_small_ws
+void bli_sgemmtrsm_u_gemmini_small_ws
      (
        dim_t               k,
        float*    restrict alpha,
-       float*    restrict a10,
+       float*    restrict a12,
        float*    restrict a11,
-       float*    restrict b01,
+       float*    restrict b21,
        float*    restrict b11,
        float*    restrict c11, inc_t rs_c, inc_t cs_c,
        auxinfo_t* restrict data,
@@ -65,13 +65,13 @@ void bli_sgemmtrsm_l_gemmini_small_ws
         float* restrict minus_one = bli_sm1;
 
 
-        /* b11 = alpha * b11 - a10 * b01; */
+        /* b11 = alpha * b11 - a12 * b21; */
         bli_sgemm_gemmini_small_ws
         (
           k,
           minus_one,
-          a10,
-          b01,
+          a12,
+          b21,
           alpha,
           b11, rs_b, cs_b,
           data,
@@ -80,7 +80,7 @@ void bli_sgemmtrsm_l_gemmini_small_ws
 
         /* b11 = inv(a11) * b11;
            c11 = b11; */
-        bli_strsm_l_gemmini_small
+        bli_strsm_u_gemmini_small
         (
           a11,
           b11,

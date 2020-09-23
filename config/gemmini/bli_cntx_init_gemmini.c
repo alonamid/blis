@@ -55,16 +55,16 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	  //0,
 	  5,
 	  // gemm
-	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_os,            TRUE,
-	  //BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_ws,            TRUE,
+	  //BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_os,            TRUE,
+	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_ws,            TRUE,
           //trsm
           BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_gemmini_small,             TRUE,
           BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_gemmini_small,             TRUE,
           //gemmtrsm
-          BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_os,      TRUE,
-          BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_os,      TRUE,
-          //BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_ws,      TRUE,
-          //BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_ws,      TRUE,
+          //BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_os,      TRUE,
+          //BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_os,      TRUE,
+          BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_ws,      TRUE,
+          BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_ws,      TRUE,
 	  cntx
 	);
 
@@ -87,18 +87,25 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 #define mats_in_acc (ACC_ROWS / DIM)
 #define max_tile_i_j ((size_t)sqrt(mats_in_acc))
 #define max_tile_k (mats_in_partition / max_tile_i_j)
+#define L2_SIZE 512*1024
+#define l2_elem_capacity (L2_SIZE / sizeof(elem_t))
+#define max_tile_l2 (l2_elem_capacity / max_tile_k)
 
 	// Initialize level-3 blocksize objects with architecture-specific values.
 	//                                               s      d      c      z
         //register blocking (array size)
-	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
+        // OS
+	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
+        // WS
+	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         max_tile_i_j,     0,     0,     0 );
 
         //cache blocking (scratchpad size)
         //TODO (Alon): Consider blocking based on L2 size rather than scratchpad size?
 	bli_blksz_init_easy( &blkszs[ BLIS_MC ],max_tile_i_j,     0,     0,     0 );
 	bli_blksz_init_easy( &blkszs[ BLIS_KC ],  max_tile_k,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NC ],max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NC ],max_tile_l2,     0,     0,     0 );
 
 	// level-1f
 	//bli_blksz_init_easy( &blkszs[ BLIS_AF ],         0,     0,     0,     0 );

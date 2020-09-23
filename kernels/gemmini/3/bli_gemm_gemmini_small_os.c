@@ -146,12 +146,14 @@ void bli_sgemm_gemmini_small_os
         size_t pad_I = 0;
         size_t pad_J = 0;
 
-
         bool no_bias = (c == NULL) || (*beta == 0);
         if (no_bias) {
           D = (acc_t*) 1; // Dummy address which isn't NULL
         }
 
+        const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
+        const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
+        const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
 
         //If C is column-major, we need to tranpose it
         static elem_t D_transpose[DIM][DIM] __attribute__ ((aligned (64)));
@@ -164,13 +166,8 @@ void bli_sgemm_gemmini_small_os
         }
 
 
-
         gemmini_extended_config_ex(OS, NO_ACTIVATION, 0, 0, 0, 1, true, false);
         gemmini_config_st(C_row_stride * sizeof(elem_t));
-
-        const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
-        const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
-        const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
 
         // Move-in D
         if (D != NULL && !no_bias) {
@@ -179,8 +176,7 @@ void bli_sgemm_gemmini_small_os
 
           for (size_t i = 0; i < I; i++) {
             for (size_t j = 0; j < J; j += D_blocks) {
-              const size_t bias_row = i;
-              const acc_t * D_dram_addr = (acc_t *)D + (bias_row * D_row_stride + j)*DIM;
+              const acc_t * D_dram_addr = (acc_t *)D + (i * D_row_stride + j)*DIM;
 
               const uint32_t D_sp_addr_acc = D_sp_addr_start + (i*J + j)*DIM;
 
@@ -191,9 +187,9 @@ void bli_sgemm_gemmini_small_os
               //mini transpose if column-major
               if (C_column_major) {
                  gemmini_fence();
-                 bli_scopys_mxn( mr,
-                              nr,
-                              (acc_t *)D + (bias_row * D_row_stride + j)*DIM,  rs_c0, cs_c0,
+                 bli_scopys_mxn( rows,
+                              cols,
+                              (acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0,
                               (elem_t*)D_transpose, DIM,  1 );
 
                  D_dram_addr = (acc_t *)D_transpose;
@@ -299,7 +295,7 @@ void bli_sgemm_gemmini_small_os
         if (C != NULL) {
           for (size_t i = 0; i < I; i++) {
             for (size_t j = 0; j < J; j++) {
-              elem_t * const C_dram_addr = C_column_major ? (elem_t*)(&C_transpose) : C + (i*C_row_stride + j)*DIM;
+              elem_t * const C_dram_addr = C_column_major ? (elem_t*)(C_transpose) : C + (i*C_row_stride + j)*DIM;
               const uint32_t C_sp_addr = C_sp_addr_start + (i*J + j)*DIM;
  
               const size_t C_cols = DIM - (j == J - 1 ? pad_J : 0);
@@ -313,7 +309,7 @@ void bli_sgemm_gemmini_small_os
                 bli_scopys_mxn( mr,
                               nr,
                               (acc_t*)C_transpose,  DIM, 1,
-                              C + (i*C_row_stride + j)*DIM, rs_c0,  cs_c0 );
+                              C + i*DIM*rs_c0 + j*DIM*cs_c0, rs_c0,  cs_c0 );
 
               }
             }

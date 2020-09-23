@@ -35,11 +35,11 @@
 // -- level-3 --
 
 // gemm (asm d12x6)
-GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
 TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
 TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
-//GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
-//GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
-//GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
+//GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
+//GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
+//GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
+GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
