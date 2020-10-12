@@ -138,10 +138,10 @@ void bli_sgemm_gemmini_small_ws
         size_t D_row_stride = rs_c0;
         size_t C_row_stride = rs_c0;
         size_t C_col_stride = cs_c0;
-        elem_t * A = a;
-        elem_t * B = b;
+        elem_t * A = (elem_t*)a;
+        elem_t * B = (elem_t*)b;
         acc_t * D = c;
-        elem_t * C = c;
+        acc_t * C = c;
         const size_t I = tile_I;
         const size_t pad_I = padding_I;
         const size_t J = tile_J;
@@ -157,7 +157,7 @@ void bli_sgemm_gemmini_small_ws
         const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
 
         //If C is column-major, we need to tranpose it
-        static elem_t D_transpose[DIM][DIM*MAX_BLOCK_LEN_ACC] __attribute__ ((aligned (64)));
+        static acc_t D_transpose[DIM][DIM*MAX_BLOCK_LEN_ACC] __attribute__ ((aligned (64)));
         static acc_t C_transpose[DIM][DIM] __attribute__ ((aligned (64)));
         bool C_column_major = false;
         if (C_row_stride == 1 && C_col_stride != 1) {
@@ -189,10 +189,26 @@ void bli_sgemm_gemmini_small_ws
               //mini transpose if column-major
               if (C_column_major) {
                  gemmini_fence();
+/*
                  bli_scopys_mxn( rows,
                               cols,
                               (acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0,
                               (elem_t*)D_transpose, MAX_BLOCK_LEN_ACC*DIM,  1 );
+*/
+#ifdef BLIS_ENABLE_CR_CASES
+                 if ( cs_c0 == 1 )
+                 {
+                   for ( dim_t ii = 0; ii < rows; ++ii )
+                   for ( dim_t jj = 0; jj < cols; ++jj )
+                     *((acc_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj);
+                 }
+                 else
+#endif
+                 {
+                   for ( dim_t jj = 0; jj < cols; ++jj )
+                   for ( dim_t ii = 0; ii < rows; ++ii )
+                     *((acc_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0);
+                 }
 
                  D_dram_addr = (acc_t *)(D_transpose);
               }
@@ -309,7 +325,7 @@ void bli_sgemm_gemmini_small_ws
         if (C != NULL) {
           for (size_t i = 0; i < I; i++) {
             for (size_t j = 0; j < J; j++) {
-              elem_t * const C_dram_addr = C_column_major ? (acc_t*)(C_transpose) : C + (i*C_row_stride + j)*DIM;
+              acc_t * const C_dram_addr = C_column_major ? (acc_t*)(C_transpose) : C + (i*C_row_stride + j)*DIM;
               const uint32_t C_sp_addr = C_sp_addr_start + (i*J + j)*DIM;
 
               const size_t C_cols = DIM - (j == J - 1 ? pad_J : 0);
@@ -320,10 +336,27 @@ void bli_sgemm_gemmini_small_ws
               //mini transpose if column-major
               if (C_column_major) {
                 gemmini_fence();
-                bli_scopys_mxn( C_rows,
+/*
+		bli_scopys_mxn( C_rows,
                               C_cols,
                               (acc_t*)(C_transpose),  DIM, 1,
                               C + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0 );
+*/
+#ifdef BLIS_ENABLE_CR_CASES
+                if ( cs_c0 == 1 )
+                {
+                  for ( dim_t ii = 0; ii < C_rows; ++ii )
+                  for ( dim_t jj = 0; jj < C_cols; ++jj )
+                    *(C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj) = *((acc_t*)(C_transpose) + ii*DIM + jj);
+                }
+                else
+#endif
+                {
+                  for ( dim_t jj = 0; jj < C_cols; ++jj )
+                  for ( dim_t ii = 0; ii < C_rows; ++ii )
+                    *(C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0) = *((acc_t*)(C_transpose) + ii*DIM + jj);
+                }
+
               }
             }
           }
