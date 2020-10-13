@@ -546,7 +546,7 @@ void GENBARNAME(cntx_init)
 	funcs = bli_cntx_packm_kers_buf( cntx );
 
 	// Initialize all packm kernel func_t entries to NULL.
-	for ( i = BLIS_PACKM_0XK_KER; i <= BLIS_PACKM_31XK_KER; ++i )
+	for ( i = BLIS_PACKM_0XK_KER; i <= BLIS_PACKM_32XK_KER; ++i )
 	{
 		bli_func_init_null( &funcs[ i ] );
 	}
@@ -684,7 +684,7 @@ void GENBAINAME(cntx_init)
 	funcs = bli_cntx_packm_kers_buf( cntx );
 
 	// Initialize all packm kernel func_t entries to NULL.
-	for ( i = BLIS_PACKM_0XK_KER; i <= BLIS_PACKM_31XK_KER; ++i )
+	for ( i = BLIS_PACKM_0XK_KER; i <= BLIS_PACKM_32XK_KER; ++i )
 	{
 		bli_func_init_null( &funcs[ i ] );
 	}
