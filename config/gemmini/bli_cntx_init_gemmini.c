@@ -91,6 +91,16 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 #define l2_elem_capacity (L2_SIZE / sizeof(elem_t))
 #define max_tile_l2 (l2_elem_capacity / max_tile_k)
 
+	// Update the context with optimized packm kernels.
+        bli_cntx_set_packm_kers
+        (
+          1,
+          //BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
+          max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
+          //max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
+          cntx
+        );
+
 	// Initialize level-3 blocksize objects with architecture-specific values.
 	//                                               s      d      c      z
         //register blocking (array size)
