@@ -52,7 +52,7 @@ typedef union {
 #define bli_scopysconvert( a, b ) \
 { \
         float_cast src_bits = { (a) }; \
-	(b) = packToF16UI( src_bits.parts.sign, src_bits.parts.exponent, src_bits.parts.mantisa >> (23 - ELEM_T_SIG_BITS) ); \
+	(b) = packToF16UI( src_bits.parts.sign, src_bits.parts.exponent, src_bits.parts.mantisa >> (FP32_SIG_BITS - ELEM_T_SIG_BITS) ); \
 }
 #else
 #define bli_scopysconvert( a, b )  bli_scopys(a, b)
