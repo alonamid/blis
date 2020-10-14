@@ -33,6 +33,31 @@
 */
 
 #include "blis.h"
+#include "include/gemmini_params.h"
+
+#define FP32_SIG_BITS 23
+#define FP32_EXP_BITS 8
+
+typedef union {
+  uint16_t f;
+  struct {
+    unsigned int mantisa : ELEM_T_SIG_BITS;
+    unsigned int exponent : ELEM_T_EXP_BITS;
+    unsigned int sign : 1;
+  } parts;
+} lowprec_cast;
+
+#define packToF32UI( sign, exp, sig ) (((uint32_t) (sign)<<31) + ((uint32_t) (exp)<<(FP32_SIG_BITS)) + (sig))
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+#define bli_tofloat( a, b ) \
+{ \
+        lowprec_cast src_bits = { (a) }; \
+        (b) = packToF32UI( src_bits.parts.sign, src_bits.parts.exponent, src_bits.parts.mantisa << (FP32_SIG_BITS - ELEM_T_SIG_BITS) ); \
+}
+#else
+#define bli_tofloat( a, b) bli_scopys(a, b)
+#endif
 
 
 void bli_strsm_u_gemmini_small
@@ -89,25 +114,28 @@ void bli_strsm_u_gemmini_small
 	dim_t              iter, i, j, l;
 	dim_t              n_behind;
 
-	float* restrict alpha11;
-	float* restrict a12t;
-	float* restrict alpha12;
-	float* restrict X2;
-	float* restrict x1;
-	float* restrict x21;
-	float* restrict chi21;
-	float* restrict chi11;
-	float* restrict gamma11;
-	float           rho11;
+	elem_t* restrict alpha11;
+	elem_t* restrict a12t;
+	elem_t* restrict alpha12;
+	float            alpha12_f;
+	elem_t* restrict X2;
+	elem_t* restrict x1;
+	elem_t* restrict x21;
+	elem_t* restrict chi21;
+	elem_t* restrict chi11;
+	float            chi21_f;
+	float            chi11_f;
+	float* restrict  gamma11;
+	float            rho11;
 
 	for ( iter = 0; iter < m; ++iter )
 	{
 		i        = m - iter - 1;
 		n_behind = iter;
-		alpha11  = a11 + (i  )*rs_a + (i  )*cs_a;
-		a12t     = a11 + (i  )*rs_a + (i+1)*cs_a;
-		x1       = b11 + (i  )*rs_b + (0  )*cs_b;
-		X2       = b11 + (i+1)*rs_b + (0  )*cs_b;
+		alpha11  = (elem_t*)a11 + (i  )*rs_a + (i  )*cs_a;
+		a12t     = (elem_t*)a11 + (i  )*rs_a + (i+1)*cs_a;
+		x1       = (elem_t*)b11 + (i  )*rs_b + (0  )*cs_b;
+		X2       = (elem_t*)b11 + (i+1)*rs_b + (0  )*cs_b;
 
 		/* x1 = x1 - a12t * X2; */
 		/* x1 = x1 / alpha11; */
@@ -124,9 +152,12 @@ void bli_strsm_u_gemmini_small
 				alpha12 = a12t + (l  )*cs_a;
 				chi21   = x21  + (l  )*rs_b;
 
-				bli_saxpys( *alpha12, *chi21, rho11 );
+				bli_tofloat(*alpha12, alpha12_f);
+				bli_tofloat(*chi21, chi21_f);;
+				bli_saxpys( alpha12_f, chi21_f, rho11 );
 			}
-			bli_ssubs( rho11, *chi11 );
+			bli_tofloat(*chi11, chi11_f);
+			bli_ssubs( rho11, chi11_f );
 
 			/* chi11 = chi11 / alpha11; */
 			/* NOTE: The INVERSE of alpha11 (1.0/alpha11) is stored instead
@@ -136,7 +167,7 @@ void bli_strsm_u_gemmini_small
 			bli_sscals( *alpha11, *chi11 );
 
 			/* Output final result to matrix C. */
-			bli_scopys( *chi11, *gamma11 );
+			bli_scopys( chi11_f, *gamma11 );
 		}
 	}
 }
