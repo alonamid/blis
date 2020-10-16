@@ -47,7 +47,17 @@ typedef union {
   } parts;
 } lowprec_cast;
 
+typedef union {
+  float f;
+  struct {
+    unsigned int mantisa : FP32_SIG_BITS;
+    unsigned int exponent : FP32_EXP_BITS;
+    unsigned int sign : 1;
+  } parts;
+} float_cast;
+
 #define packToF32UI( sign, exp, sig ) (((uint32_t) (sign)<<31) + ((uint32_t) (exp)<<(FP32_SIG_BITS)) + (sig))
+#define packToF16UI( sign, exp, sig ) (((uint16_t) (sign)<<15) + ((uint16_t) (exp)<<(ELEM_T_SIG_BITS - 1)) + (sig))
 
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
 #define bli_tofloat( a, b ) \
@@ -56,9 +66,18 @@ typedef union {
         (b) = packToF32UI( src_bits.parts.sign, src_bits.parts.exponent, src_bits.parts.mantisa << (FP32_SIG_BITS - ELEM_T_SIG_BITS) ); \
 }
 #else
-#define bli_tofloat( a, b) bli_scopys(a, b)
+#define bli_tofloat( a, b)  bli_scopys(a, b)
 #endif
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+#define bli_tolowprec( a, b ) \
+{ \
+        float_cast src_bits = { (a) }; \
+        (b) = packToF16UI( src_bits.parts.sign, src_bits.parts.exponent, src_bits.parts.mantisa >> (FP32_SIG_BITS - ELEM_T_SIG_BITS) ); \
+}
+#else
+#define bli_tolowprec( a, b )  bli_scopys(a, b)
+#endif
 
 void bli_strsm_u_gemmini_small
      (
@@ -115,6 +134,7 @@ void bli_strsm_u_gemmini_small
 	dim_t              n_behind;
 
 	elem_t* restrict alpha11;
+	float            alpha11_f;
 	elem_t* restrict a12t;
 	elem_t* restrict alpha12;
 	float            alpha12_f;
@@ -153,7 +173,7 @@ void bli_strsm_u_gemmini_small
 				chi21   = x21  + (l  )*rs_b;
 
 				bli_tofloat(*alpha12, alpha12_f);
-				bli_tofloat(*chi21, chi21_f);;
+				bli_tofloat(*chi21, chi21_f);
 				bli_saxpys( alpha12_f, chi21_f, rho11 );
 			}
 			bli_tofloat(*chi11, chi11_f);
@@ -164,10 +184,12 @@ void bli_strsm_u_gemmini_small
 			   of alpha11, so we can multiply rather than divide. We store
 			   the inverse of alpha11 intentionally to avoid expensive
 			   division instructions within the micro-kernel. */
-			bli_sscals( *alpha11, *chi11 );
+			bli_tofloat(*alpha11, alpha11_f);
+			bli_sscals( alpha11_f, chi11_f );
 
 			/* Output final result to matrix C. */
 			bli_scopys( chi11_f, *gamma11 );
+                        bli_tolowprec(chi11_f, *chi11);
 		}
 	}
 }
