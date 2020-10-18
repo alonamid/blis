@@ -94,9 +94,10 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	// Update the context with optimized packm kernels.
         bli_cntx_set_packm_kers
         (
-          1,
-          //BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
-          max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
+          2,
+          BLIS_PACKM_4XK_KER,   BLIS_FLOAT, bli_spackm_gemmini_4xk,
+          BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
+          //max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
           //max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
           cntx
         );
@@ -110,6 +111,8 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
         // WS
 	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         max_tile_i_j,     0,     0,     0 );
 	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         max_tile_i_j,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
 
         //cache blocking (scratchpad size)
         //TODO (Alon): Consider blocking based on L2 size rather than scratchpad size?

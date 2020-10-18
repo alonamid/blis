@@ -34,6 +34,7 @@
 
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_gemmini_32xk )
+PACKM_KER_PROT( float,   s, packm_gemmini_4xk )
 PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
 
 // -- level-3 --
