@@ -36,6 +36,35 @@
 #include "blis.h"
 #include "include/gemmini.h"
 
+#define FP32_SIG_BITS 23
+#define FP32_EXP_BITS 8
+
+typedef union {
+  float f;
+  //struct {
+  //  unsigned int mantisa : FP32_SIG_BITS;
+  //  unsigned int exponent : FP32_EXP_BITS;
+  //  unsigned int sign : 1;
+  //} parts;
+  uint32_t bits;
+} float_cast;
+
+#define packToF32UI( sign, exp, sig ) (((uint32_t) (sign)<<31) + ((uint32_t) (exp)<<(FP32_SIG_BITS)) + (sig))
+#define packToF16UI( sign, exp, sig ) (((uint16_t) (sign)<<15) + ((uint16_t) (exp)<<(ELEM_T_SIG_BITS - 1)) + (sig))
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+#define bli_tofloat(a, b) \
+{ \
+    float_cast tmp; \
+    tmp.bits = (uint32_t)(a) << (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)); \
+    (b) = tmp.f; \
+}
+#else
+#define bli_tofloat( a, b)  bli_scopys(a, b)
+#endif
+
+
+
 void bli_sgemm_gemmini_small_ws
      (
        dim_t               k0,
@@ -94,7 +123,24 @@ void bli_sgemm_gemmini_small_ws
         //printf("cs_a: %d, rs_b: %d, cs_c0: %d, rs_c0: %d\n", cs_a, rs_b, cs_c0, rs_c0);
         //printf("alpha: %f, beta: %f\n", *alpha, *beta);
 
-
+/*
+        printf("===Manual Result C====\n");
+        for (int i=0; i<mr; i++) {
+         for (int j=0; j<nr; j++) {
+           float cval = *beta * *(c + i*rs_c0 + j*cs_c0);
+           for (int k=0; k<k0; k++) {
+             float a_f;
+             float b_f;
+             bli_tofloat(*((elem_t*)a + k*cs_a + i), a_f);
+             bli_tofloat(*((elem_t*)b + k*rs_b + j), b_f);
+             cval += *alpha * a_f * b_f;
+             //cval += *alpha * *((elem_t*)a + k*cs_a + i) * *((elem_t*)b + k*rs_b + j);
+           }
+           printf("%f ", cval);
+          }
+          printf("\n");
+        }
+*/
 
         //==============Gemmini Specific Code======================
         //we want mr=sqrt(accumulators) and nr=sqrt(accumulators)         //k0 is unbounded
@@ -153,7 +199,7 @@ void bli_sgemm_gemmini_small_ws
         }
 
         const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
-        const uint32_t C_sp_addr_start = 3 << (ADDR_LEN-2);
+        const uint32_t C_sp_addr_start = 7 << (ADDR_LEN-3);
         const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
 
         //If C is column-major, we need to tranpose it
@@ -168,7 +214,7 @@ void bli_sgemm_gemmini_small_ws
 
 
         gemmini_extended_config_ex(WS, NO_ACTIVATION, 0, 0, 0, 1, true, false)
-        gemmini_config_st(C_row_stride * sizeof(elem_t));
+        gemmini_config_st(C_row_stride * sizeof(acc_t));
 
         // Move-in D
         if (D != NULL && !no_bias) {
@@ -378,6 +424,15 @@ void bli_sgemm_gemmini_small_ws
             WS);
 */
 
+/*
+        printf("===Gemmini Result C====\n");
+        for (int i=0; i<mr; i++) {
+         for (int j=0; j<nr; j++) {
+           printf("%f ", *(c + i*rs_c0 + j*cs_c0));
+         }
+          printf("\n");
+        }
+*/
       }
 
 }
