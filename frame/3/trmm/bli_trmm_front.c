@@ -52,6 +52,11 @@ void bli_trmm_front
 	obj_t   b_local;
 	obj_t   c_local;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
+
 	// Check parameters.
 	if ( bli_error_checking_is_enabled() )
 		bli_trmm_check( side, alpha, a, b, &BLIS_ZERO, b, cntx );
@@ -201,5 +206,11 @@ void bli_trmm_front
 	  rntm,
 	  cntl
 	);
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 0);
+#endif
+
 }
 

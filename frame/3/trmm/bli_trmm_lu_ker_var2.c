@@ -400,6 +400,8 @@ void PASTEMAC(ch,varname) \
 				/*if ( bli_trmm_my_iter( i, ir_thread ) ) {*/ \
 \
 				b1_i = b1 + ( off_a1112 * PACKNR ) / off_scl; \
+				if (bli_cntx_lowprec_in_use(cntx)) \
+					b1_i = (ctype*)((elem_t*)b1 + ( off_a1112 * PACKNR ) / off_scl); \
 \
 				/* Compute the addresses of the next panels of A and B. */ \
 				a2 = a1; \

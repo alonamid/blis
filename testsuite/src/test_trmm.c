@@ -41,7 +41,7 @@
 static char*     op_str                    = "trmm";
 static char*     o_types                   = "mm";   // a b
 static char*     p_types                   = "suhd"; // side uploa transa diaga
-static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-04, 1e-05 },   // warn, pass for s
+static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-02, 1e-03 },   // warn, pass for s
                                                { 1e-04, 1e-05 },   // warn, pass for c
                                                { 1e-13, 1e-14 },   // warn, pass for d
                                                { 1e-13, 1e-14 } }; // warn, pass for z

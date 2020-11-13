@@ -523,6 +523,8 @@ void PASTEMAC(ch,varname) \
 				m_cur = ( bli_is_not_edge_f( i, m_iter, m_left ) ? MR : m_left ); \
 \
 				a1_i = a1 + ( off_b1121 * PACKMR ) / off_scl; \
+				if (bli_cntx_lowprec_in_use(cntx)) \
+					a1_i = (ctype*)((elem_t*)a1 + ( off_b1121 * PACKMR ) / off_scl); \
 \
 				/* Compute the addresses of the next panels of A and B. */ \
 				a2 = a1; \
