@@ -53,6 +53,11 @@ void bli_gemm_front
 	obj_t   b_local;
 	obj_t   c_local;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
+
 #if 0
 #ifdef BLIS_ENABLE_SMALL_MATRIX
 	// Only handle small problems separately for homogeneous datatypes.
@@ -291,6 +296,10 @@ void bli_gemm_front
 		bli_obj_free( &ct );
 	}
 #endif
+#endif
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 0);
 #endif
 }
 

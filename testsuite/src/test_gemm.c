@@ -41,7 +41,7 @@
 static char*     op_str                    = "gemm";
 static char*     o_types                   = "mmm"; // a b c
 static char*     p_types                   = "hh";  // transa transb
-static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-04, 1e-05 },   // warn, pass for s
+static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-02, 1e-03 },   // warn, pass for s
                                                { 1e-04, 1e-05 },   // warn, pass for c
                                                { 1e-13, 1e-14 },   // warn, pass for d
                                                { 1e-13, 1e-14 } }; // warn, pass for z
@@ -637,7 +637,6 @@ void libblis_test_gemm_check
 	libblis_test_vobj_randomize( params, TRUE, &t );
 
 	bli_gemv( &BLIS_ONE, c, &t, &BLIS_ZERO, &v );
-
 	bli_gemv( &BLIS_ONE, b, &t, &BLIS_ZERO, &w );
 	bli_gemv( alpha, a, &w, &BLIS_ZERO, &z );
 	bli_gemv( beta, c_orig, &t, &BLIS_ONE, &z );
