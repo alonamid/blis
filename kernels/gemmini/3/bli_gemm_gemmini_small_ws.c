@@ -36,34 +36,6 @@
 #include "blis.h"
 #include "include/gemmini.h"
 
-#define FP32_SIG_BITS 23
-#define FP32_EXP_BITS 8
-
-typedef union {
-  float f;
-  //struct {
-  //  unsigned int mantisa : FP32_SIG_BITS;
-  //  unsigned int exponent : FP32_EXP_BITS;
-  //  unsigned int sign : 1;
-  //} parts;
-  uint32_t bits;
-} float_cast;
-
-#define packToF32UI( sign, exp, sig ) (((uint32_t) (sign)<<31) + ((uint32_t) (exp)<<(FP32_SIG_BITS)) + (sig))
-#define packToF16UI( sign, exp, sig ) (((uint16_t) (sign)<<15) + ((uint16_t) (exp)<<(ELEM_T_SIG_BITS - 1)) + (sig))
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tofloat(a, b) \
-{ \
-    float_cast tmp; \
-    tmp.bits = (uint32_t)(a) << (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)); \
-    (b) = tmp.f; \
-}
-#else
-#define bli_tofloat( a, b)  bli_scopys(a, b)
-#endif
-
-
 
 void bli_sgemm_gemmini_small_ws
      (
@@ -89,6 +61,7 @@ void bli_sgemm_gemmini_small_ws
 	const inc_t        cs_a   = packmr;
 	const inc_t        rs_b   = packnr;
 
+	const bool_t       elem_out = bli_cntx_lowprec_elem_out(cntx);
 
 
        if (k0 == 0) 
@@ -124,7 +97,41 @@ void bli_sgemm_gemmini_small_ws
         //printf("alpha: %f, beta: %f\n", *alpha, *beta);
 
 /*
-        printf("===Manual Result C====\n");
+        printf("===GEMM Microkernel A panel====\n");
+        for (int i=0; i<mr; i++) {
+           for (int k=0; k<k0; k++) {
+             float a_f;
+             bli_tofloat(*((elem_t*)a + k*cs_a + i), a_f);
+             printf("%f ", a_f);
+          }
+          printf("\n");
+        }
+        printf("===GEMM Microkernel B panel====\n");
+        for (int i=0; i<nr; i++) {
+           for (int k=0; k<k0; k++) {
+             float b_f;
+             bli_tofloat(*((elem_t*)b + k*rs_b + i), b_f);
+             printf("%f ", b_f);
+          }
+          printf("\n");
+        }
+
+        printf("===GEMM Microkernel C Bias====\n");
+        for (int i=0; i<mr; i++) {
+         for (int j=0; j<nr; j++) {
+	   if (elem_out)
+	   {
+             float c_f;
+             bli_tofloat(*((elem_t*)c + i*rs_c0 + j*cs_c0), c_f);
+             printf("%f ", c_f);
+           } else {
+             printf("%f ", *(c + i*rs_c0 + j*cs_c0));
+           }
+         }
+          printf("\n");
+        }
+
+        printf("===GEMM Microkernel Manual Result C====\n");
         for (int i=0; i<mr; i++) {
          for (int j=0; j<nr; j++) {
            float cval = *beta * *(c + i*rs_c0 + j*cs_c0);
@@ -198,8 +205,8 @@ void bli_sgemm_gemmini_small_ws
           D = (acc_t*) 1; // Dummy address which isn't NULL
         }
 
+        const uint32_t C_sp_addr_start = elem_out ? ( (uint32_t)3 << (ADDR_LEN-2) ) : ( (uint32_t)7 << (ADDR_LEN-3) );
         const uint32_t D_sp_addr_start = 1 << (ADDR_LEN-1);
-        const uint32_t C_sp_addr_start = 7 << (ADDR_LEN-3);
         const int D_blocks = J <= MAX_BLOCK_LEN_ACC ? J : MAX_BLOCK_LEN_ACC;
 
         //If C is column-major, we need to tranpose it
@@ -214,17 +221,19 @@ void bli_sgemm_gemmini_small_ws
 
 
         gemmini_extended_config_ex(WS, NO_ACTIVATION, 0, 0, 0, 1, true, false)
-        gemmini_config_st(C_row_stride * sizeof(acc_t));
+        const size_t C_stride = elem_out ? C_row_stride * sizeof(elem_t) :  C_row_stride * sizeof(acc_t);
+        gemmini_config_st(C_stride);
 
         // Move-in D
         if (D != NULL && !no_bias) {
-          const size_t D_stride = D_row_stride * sizeof(acc_t);
-          gemmini_extended_config_ld(D_stride, D_scale_factor);
+          const size_t D_stride = elem_out ? D_row_stride * sizeof(elem_t) :  D_row_stride * sizeof(acc_t);
+          gemmini_extended2_config_ld(D_stride, D_scale_factor, elem_out);
 
           for (size_t i = 0; i < I; i++) {
             for (size_t j = 0; j < J; j += D_blocks) {
 
-              const acc_t * D_dram_addr = (acc_t *)D + (i * D_row_stride + j)*DIM;
+              const acc_t * D_dram_addr = elem_out ? (acc_t*)((elem_t *)D + (i * D_row_stride + j)*DIM) :
+                                                     (acc_t *)D + (i * D_row_stride + j)*DIM;
 
               const uint32_t D_sp_addr_acc = D_sp_addr_start + (i*J + j)*DIM;
 
@@ -235,28 +244,48 @@ void bli_sgemm_gemmini_small_ws
               //mini transpose if column-major
               if (C_column_major) {
                  gemmini_fence();
-/*
-                 bli_scopys_mxn( rows,
-                              cols,
-                              (acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0,
-                              (elem_t*)D_transpose, MAX_BLOCK_LEN_ACC*DIM,  1 );
-*/
+
+                 //bli_scopys_mxn( rows,
+                 //             cols,
+                 //             (acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0,
+                 //             (elem_t*)D_transpose, MAX_BLOCK_LEN_ACC*DIM,  1 );
+                 if (elem_out)
+                 {
 #ifdef BLIS_ENABLE_CR_CASES
-                 if ( cs_c0 == 1 )
-                 {
-                   for ( dim_t ii = 0; ii < rows; ++ii )
-                   for ( dim_t jj = 0; jj < cols; ++jj )
-                     *((acc_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj);
-                 }
-                 else
+                   if ( cs_c0 == 1 )
+                   {
+                     for ( dim_t ii = 0; ii < rows; ++ii )
+                     for ( dim_t jj = 0; jj < cols; ++jj )
+                       *((elem_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((elem_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj);
+                   }
+                   else
 #endif
-                 {
-                   for ( dim_t jj = 0; jj < cols; ++jj )
-                   for ( dim_t ii = 0; ii < rows; ++ii )
-                     *((acc_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0);
+                   {
+                     for ( dim_t jj = 0; jj < cols; ++jj )
+                     for ( dim_t ii = 0; ii < rows; ++ii )
+                       *((elem_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((elem_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0);
+                   }
+
+                 } else {
+#ifdef BLIS_ENABLE_CR_CASES
+                   if ( cs_c0 == 1 )
+                   {
+                     for ( dim_t ii = 0; ii < rows; ++ii )
+                     for ( dim_t jj = 0; jj < cols; ++jj )
+                       *((acc_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj);
+                   }
+                   else
+#endif
+                   {
+                     for ( dim_t jj = 0; jj < cols; ++jj )
+                     for ( dim_t ii = 0; ii < rows; ++ii )
+                       *((acc_t*)D_transpose + ii*MAX_BLOCK_LEN_ACC*DIM + jj) = *((acc_t *)D + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0);
+                   }
+
                  }
 
                  D_dram_addr = (acc_t *)(D_transpose);
+
               }
 
               gemmini_extended_mvin(D_dram_addr, D_sp_addr_acc, cols, rows);
@@ -371,7 +400,8 @@ void bli_sgemm_gemmini_small_ws
         if (C != NULL) {
           for (size_t i = 0; i < I; i++) {
             for (size_t j = 0; j < J; j++) {
-              acc_t * const C_dram_addr = C_column_major ? (acc_t*)(C_transpose) : C + (i*C_row_stride + j)*DIM;
+              acc_t * const C_dram_addr = C_column_major ? (acc_t*)(C_transpose) : 
+                                                           (elem_out ? (acc_t*)((elem_t*)C + (i*C_row_stride + j)*DIM) :  C + (i*C_row_stride + j)*DIM);
               const uint32_t C_sp_addr = C_sp_addr_start + (i*J + j)*DIM;
 
               const size_t C_cols = DIM - (j == J - 1 ? pad_J : 0);
@@ -382,27 +412,43 @@ void bli_sgemm_gemmini_small_ws
               //mini transpose if column-major
               if (C_column_major) {
                 gemmini_fence();
-/*
-		bli_scopys_mxn( C_rows,
-                              C_cols,
-                              (acc_t*)(C_transpose),  DIM, 1,
-                              C + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0 );
-*/
-#ifdef BLIS_ENABLE_CR_CASES
-                if ( cs_c0 == 1 )
-                {
-                  for ( dim_t ii = 0; ii < C_rows; ++ii )
-                  for ( dim_t jj = 0; jj < C_cols; ++jj )
-                    *(C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj) = *((acc_t*)(C_transpose) + ii*DIM + jj);
-                }
-                else
-#endif
-                {
-                  for ( dim_t jj = 0; jj < C_cols; ++jj )
-                  for ( dim_t ii = 0; ii < C_rows; ++ii )
-                    *(C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0) = *((acc_t*)(C_transpose) + ii*DIM + jj);
-                }
 
+                //bli_scopys_mxn( C_rows,
+                //              C_cols,
+                //              (acc_t*)(C_transpose),  DIM, 1,
+                //              C + i*DIM*rs_c0 + j*DIM*cs_c0,  rs_c0, cs_c0 );
+                if (elem_out)
+                {
+#ifdef BLIS_ENABLE_CR_CASES
+                  if ( cs_c0 == 1 )
+                  {
+                    for ( dim_t ii = 0; ii < C_rows; ++ii )
+                    for ( dim_t jj = 0; jj < C_cols; ++jj )
+                      *((elem_t*)C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj) = *((elem_t*)(C_transpose) + ii*DIM + jj);
+                  }
+                  else
+#endif
+                  {
+                    for ( dim_t jj = 0; jj < C_cols; ++jj )
+                    for ( dim_t ii = 0; ii < C_rows; ++ii )
+                      *((elem_t*)C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0) = *((elem_t*)(C_transpose) + ii*DIM + jj);
+                  }
+                } else {
+#ifdef BLIS_ENABLE_CR_CASES
+                  if ( cs_c0 == 1 )
+                  {
+                    for ( dim_t ii = 0; ii < C_rows; ++ii )
+                    for ( dim_t jj = 0; jj < C_cols; ++jj )
+                      *(C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj) = *((acc_t*)(C_transpose) + ii*DIM + jj);
+                  }
+                  else
+#endif
+                  {
+                    for ( dim_t jj = 0; jj < C_cols; ++jj )
+                    for ( dim_t ii = 0; ii < C_rows; ++ii )
+                      *(C + i*DIM*rs_c0 + j*DIM*cs_c0 + ii*rs_c0 + jj*cs_c0) = *((acc_t*)(C_transpose) + ii*DIM + jj);
+                  }
+                }
               }
             }
           }
@@ -425,14 +471,20 @@ void bli_sgemm_gemmini_small_ws
 */
 
 /*
-        printf("===Gemmini Result C====\n");
+        printf("===GEMM Microkernel Result C====\n");
         for (int i=0; i<mr; i++) {
          for (int j=0; j<nr; j++) {
-           printf("%f ", *(c + i*rs_c0 + j*cs_c0));
+	   if (elem_out)
+	   {
+             float c_f;
+             bli_tofloat(*((elem_t*)c + i*rs_c0 + j*cs_c0), c_f);
+             printf("%f ", c_f);
+           } else {
+             printf("%f ", *(c + i*rs_c0 + j*cs_c0));
+           }
          }
           printf("\n");
         }
 */
       }
-
 }

@@ -51,13 +51,8 @@ void bli_sgemmtrsm_u_gemmini_small_ws
 
 	const num_t        dt     = BLIS_FLOAT;
 
-	//const dim_t        mr     = bli_cntx_get_blksz_def_dt( dt, BLIS_MR, cntx );
-	//const dim_t        nr     = bli_cntx_get_blksz_def_dt( dt, BLIS_NR, cntx );
-
-	//const inc_t        packmr = bli_cntx_get_blksz_max_dt( dt, BLIS_MR, cntx );
 	const inc_t        packnr = bli_cntx_get_blksz_max_dt( dt, BLIS_NR, cntx );
 
-	//const inc_t        cs_a   = packmr;
 	const inc_t        rs_b   = packnr;
         const inc_t        cs_b   = 1;
 
@@ -66,6 +61,8 @@ void bli_sgemmtrsm_u_gemmini_small_ws
 
 
         /* b11 = alpha * b11 - a12 * b21; */
+
+	bli_cntx_set_lowprec_elem_out(cntx, 1);
         bli_sgemm_gemmini_small_ws
         (
           k,
@@ -77,6 +74,7 @@ void bli_sgemmtrsm_u_gemmini_small_ws
           data,
           cntx
         );
+	bli_cntx_set_lowprec_elem_out(cntx, 0);
 
         /* b11 = inv(a11) * b11;
            c11 = b11; */
@@ -88,10 +86,5 @@ void bli_sgemmtrsm_u_gemmini_small_ws
           data,
           cntx
         );
-
-
-
-
-
 
 }

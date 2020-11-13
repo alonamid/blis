@@ -66,6 +66,7 @@ void bli_sgemmtrsm_u_gemmini_small_os
 
 
         /* b11 = alpha * b11 - a12 * b21; */
+	bli_cntx_set_lowprec_elem_out(cntx, 1);
         bli_sgemm_gemmini_small_os
         (
           k,
@@ -77,6 +78,7 @@ void bli_sgemmtrsm_u_gemmini_small_os
           data,
           cntx
         );
+	bli_cntx_set_lowprec_elem_out(cntx, 0);
 
         /* b11 = inv(a11) * b11;
            c11 = b11; */

@@ -51,21 +51,63 @@ void bli_sgemmtrsm_l_gemmini_small_ws
 
 	const num_t        dt     = BLIS_FLOAT;
 
-	//const dim_t        mr     = bli_cntx_get_blksz_def_dt( dt, BLIS_MR, cntx );
-	//const dim_t        nr     = bli_cntx_get_blksz_def_dt( dt, BLIS_NR, cntx );
-
-	//const inc_t        packmr = bli_cntx_get_blksz_max_dt( dt, BLIS_MR, cntx );
 	const inc_t        packnr = bli_cntx_get_blksz_max_dt( dt, BLIS_NR, cntx );
 
-	//const inc_t        cs_a   = packmr;
 	const inc_t        rs_b   = packnr;
         const inc_t        cs_b   = 1;
 
 
         float* restrict minus_one = bli_sm1;
-
+/*
+	const inc_t        packmr = bli_cntx_get_blksz_max_dt( dt, BLIS_MR, cntx );
+        printf("===GEMMTRSM Microkernel A10 panel====\n");
+        for (int i=0; i<packmr; i++) {
+           for (int kk=0; kk<k; kk++) {
+             float a_f;
+             bli_tofloat(*((elem_t*)a10 + kk*packmr + i), a_f);
+             printf("%f ", a_f);
+          }
+          printf("\n");
+        }
+        printf("===GEMMTRSM Microkernel A11 panel====\n");
+        for (int i=0; i<packmr; i++) {
+           for (int kk=0; kk<k; kk++) {
+             float a_f;
+             bli_tofloat(*((elem_t*)a11 + kk*packmr + i), a_f);
+             printf("%f ", a_f);
+          }
+          printf("\n");
+        }
+        printf("===GEMMTRSM Microkernel B01 panel====\n");
+        for (int i=0; i<packnr; i++) {
+           for (int kk=0; kk<k; kk++) {
+             float b_f;
+             bli_tofloat(*((elem_t*)b01 + kk*packnr + i), b_f);
+             printf("%f ", b_f);
+          }
+          printf("\n");
+        }
+        printf("===GEMMTRSM Microkernel B11 panel====\n");
+        for (int i=0; i<packnr; i++) {
+           for (int kk=0; kk<k; kk++) {
+             float b_f;
+             bli_tofloat(*((elem_t*)b11 + kk*packnr + i), b_f);
+             printf("%f ", b_f);
+          }
+          printf("\n");
+        }
+       printf("===GEMMTRSM Microkernel C11 panel====\n");
+        for (int ii=0; ii<packmr; ii++) {
+         for (int jj=0; jj<packnr; jj++) {
+           printf("%f ", *(c11 + ii*rs_c + jj*cs_c));
+         }
+          printf("\n");
+        }
+*/
 
         /* b11 = alpha * b11 - a10 * b01; */
+
+	bli_cntx_set_lowprec_elem_out(cntx, 1);
         bli_sgemm_gemmini_small_ws
         (
           k,
@@ -77,9 +119,12 @@ void bli_sgemmtrsm_l_gemmini_small_ws
           data,
           cntx
         );
+	bli_cntx_set_lowprec_elem_out(cntx, 0);
+
 
         /* b11 = inv(a11) * b11;
            c11 = b11; */
+
         bli_strsm_l_gemmini_small
         (
           a11,
@@ -89,9 +134,13 @@ void bli_sgemmtrsm_l_gemmini_small_ws
           cntx
         );
 
-
-
-
-
-
+/*
+       printf("===GEMMTRSM Microkernel Gemmini Result C====\n");
+        for (int ii=0; ii<mr; ii++) {
+         for (int jj=0; jj<nr; jj++) {
+           printf("%f ", *(c11 + ii*rs_c + jj*cs_c));
+         }
+          printf("\n");
+        }
+*/
 }

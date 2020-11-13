@@ -35,83 +35,6 @@
 #include "blis.h"
 #include "include/gemmini_params.h"
 
-#define FP32_SIG_BITS 23
-#define FP32_EXP_BITS 8
-
-typedef union {
-  float f;
-  struct {
-    unsigned int mantisa : FP32_SIG_BITS;
-    unsigned int exponent : FP32_EXP_BITS;
-    unsigned int sign : 1;
-  } parts;
-  uint32_t bits;
-} float_cast;
-
-
-//=========FOR BF16==========
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tofloat(a, b) \
-{ \
-    float_cast tmp; \
-    tmp.bits = (uint32_t)(a) << (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)); \
-    (b) = tmp.f; \
-}
-#else
-#define bli_tofloat( a, b)  bli_scopys(a, b)
-#endif
-
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tolowprec( a, b ) \
-{ \
-        float_cast tmp = { (a) }; \
-        (b) = (elem_t)(tmp.bits >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1))); \
-}
-#else
-#define bli_tolowprec( a, b )  bli_scopys(a, b)
-#endif
-
-
-//=========FOR FP16 or other 16-bit FP formats==========
-/*
-typedef union {
-  uint16_t f;
-  struct {
-    unsigned int mantisa : ELEM_T_SIG_BITS - 1;
-    unsigned int exponent : ELEM_T_EXP_BITS;
-    unsigned int sign : 1;
-  } parts;
-} lowprec_cast;
-
-#define packToF32UI( sign, exp, sig ) (((uint32_t) (sign)<<31) + ((uint32_t) (exp)<<(FP32_SIG_BITS)) + (sig))
-#define packToF16UI( sign, exp, sig ) (((uint16_t) (sign)<<15) + ((uint16_t) (exp)<<(ELEM_T_SIG_BITS - 1)) + (sig))
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tofloat( a, b ) \
-{ \
-      lowprec_cast src_bits = { (a) }; \
-      float_cast tmp; \
-      tmp.bits  = packToF32UI( src_bits.parts.sign, src_bits.parts.exponent << (FP32_EXP_BITS - ELEM_T_EXP_BITS), src_bits.parts.mantisa << (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)) ); \
-      (b) = tmp.f; \
-}
-#else
-#define bli_tofloat( a, b)  bli_scopys(a, b)
-#endif
-
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tolowprec( a, b ) \
-{ \
-      float_cast src_bits = { (a) }; \
-      (b) = packToF16UI( src_bits.parts.sign, src_bits.parts.exponenti >> (FP32_EXP_BITS - ELEM_T_EXP_BITS), src_bits.parts.mantisa >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)) ); \
-}
-#else
-#define bli_tolowprec( a, b )  bli_scopys(a, b)
-#endif
-*/
-
-
 void bli_strsm_u_gemmini_small
      (
        float*  restrict a11,
@@ -226,4 +149,3 @@ void bli_strsm_u_gemmini_small
 		}
 	}
 }
-

@@ -35,20 +35,7 @@
 #include "blis.h"
 #include "include/gemmini_params.h"
 
-#define FP32_SIG_BITS 23
-#define FP32_EXP_BITS 8
-
-typedef union {
-  float f;
-  struct {
-    unsigned int mantisa : FP32_SIG_BITS;
-    unsigned int exponent : FP32_EXP_BITS;
-    unsigned int sign : 1;
-  } parts;
-  uint32_t bits;
-} float_cast;
-
-//=========FOR BF16==========
+//=========BF16 Conversion Helper Macros==========
 
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
 #define bli_scopysconvert( a, b ) \
@@ -70,32 +57,8 @@ typedef union {
 #define bli_sscal2sconvert(x, a, b )  bli_sscal2s(x, a, b)
 #endif
 
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tofloat(a, b) \
-{ \
-    float_cast tmp; \
-    tmp.bits = (uint32_t)(a) << (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)); \
-    (b) = tmp.f; \
-}
-#else
-#define bli_tofloat( a, b)  bli_scopys(a, b)
-#endif
-
-
-//=========FOR FP16 or other 16-bit FP formats==========
+//=========FP16 or other 16-bit FP format Conversion Helper Macros==========
 /*
-typedef union {
-  uint16_t f;
-  struct {
-    unsigned int mantisa : ELEM_T_SIG_BITS - 1;
-    unsigned int exponent : ELEM_T_EXP_BITS;
-    unsigned int sign : 1;
-  } parts;
-} lowprec_cast;
-
-#define packToF32UI( sign, exp, sig ) (((uint32_t) (sign)<<31) + ((uint32_t) (exp)<<(FP32_SIG_BITS)) + (sig))
-#define packToF16UI( sign, exp, sig ) (((uint16_t) (sign)<<15) + ((uint16_t) (exp)<<(ELEM_T_SIG_BITS - 1)) + (sig))
-
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
 #define bli_scopysconvert( a, b ) \
 { \
@@ -116,19 +79,6 @@ typedef union {
 #else
 #define bli_sscal2sconvert(x, a, b )  bli_sscal2s(x, a, b)
 #endif
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_tofloat(a, b) \
-{ \
-    lowprec_cast src_bits = { (a) }; \
-    float_cast tmp; \
-    tmp.bits  = packToF32UI( src_bits.parts.sign, src_bits.parts.exponent << (FP32_EXP_BITS - ELEM_T_EXP_BITS), src_bits.parts.mantisa << (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)) ); \
-    (b) = tmp.f; \
-}
-#else
-#define bli_tofloat( a, b)  bli_scopys(a, b)
-#endif
-
 */
 
 
@@ -149,9 +99,11 @@ void bli_spackm_gemmini_32xk
 {
     float*  restrict kappa_cast = kappa;
     float*  restrict alpha1     = a;
-    elem_t* restrict pi1       = (elem_t*)p;
+    float* restrict pi1       = p;
+    elem_t* restrict pi1_lp       = (elem_t*)p;
 
     dim_t           mnr        = 32;
+
 
     if ( cdim == mnr ) //the "standard" case for packing, where a big matrix needs to be packed into panels
     {
@@ -200,151 +152,177 @@ void bli_spackm_gemmini_32xk
         }
         else
         {
-          for ( dim_t k = n; k != 0; --k )
-          {
-            bli_scopysconvert(*(alpha1 + 0*inca), *(pi1 + 0))
-            bli_scopysconvert(*(alpha1 + 1*inca), *(pi1 + 1))
-            bli_scopysconvert(*(alpha1 + 2*inca), *(pi1 + 2))
-            bli_scopysconvert(*(alpha1 + 3*inca), *(pi1 + 3))
-            bli_scopysconvert(*(alpha1 + 4*inca), *(pi1 + 4))
-            bli_scopysconvert(*(alpha1 + 5*inca), *(pi1 + 5))
-            bli_scopysconvert(*(alpha1 + 6*inca), *(pi1 + 6))
-            bli_scopysconvert(*(alpha1 + 7*inca), *(pi1 + 7))
-            bli_scopysconvert(*(alpha1 + 8*inca), *(pi1 + 8))
-            bli_scopysconvert(*(alpha1 + 9*inca), *(pi1 + 9))
-            bli_scopysconvert(*(alpha1 + 10*inca), *(pi1 + 10))
-            bli_scopysconvert(*(alpha1 + 11*inca), *(pi1 + 11))
-            bli_scopysconvert(*(alpha1 + 12*inca), *(pi1 + 12))
-            bli_scopysconvert(*(alpha1 + 13*inca), *(pi1 + 13))
-            bli_scopysconvert(*(alpha1 + 14*inca), *(pi1 + 14))
-            bli_scopysconvert(*(alpha1 + 15*inca), *(pi1 + 15))
-            bli_scopysconvert(*(alpha1 + 16*inca), *(pi1 + 16))
-            bli_scopysconvert(*(alpha1 + 17*inca), *(pi1 + 17))
-            bli_scopysconvert(*(alpha1 + 18*inca), *(pi1 + 18))
-            bli_scopysconvert(*(alpha1 + 19*inca), *(pi1 + 19))
-            bli_scopysconvert(*(alpha1 + 20*inca), *(pi1 + 20))
-            bli_scopysconvert(*(alpha1 + 21*inca), *(pi1 + 21))
-            bli_scopysconvert(*(alpha1 + 22*inca), *(pi1 + 22))
-            bli_scopysconvert(*(alpha1 + 23*inca), *(pi1 + 23))
-            bli_scopysconvert(*(alpha1 + 24*inca), *(pi1 + 24))
-            bli_scopysconvert(*(alpha1 + 25*inca), *(pi1 + 25))
-            bli_scopysconvert(*(alpha1 + 26*inca), *(pi1 + 26))
-            bli_scopysconvert(*(alpha1 + 27*inca), *(pi1 + 27))
-            bli_scopysconvert(*(alpha1 + 28*inca), *(pi1 + 28))
-            bli_scopysconvert(*(alpha1 + 29*inca), *(pi1 + 29))
-            bli_scopysconvert(*(alpha1 + 30*inca), *(pi1 + 30))
-            bli_scopysconvert(*(alpha1 + 31*inca), *(pi1 + 31))
-/*
-            bli_scopys(*(alpha1 + 0*inca), *(pi1 + 0))
-            bli_scopys(*(alpha1 + 1*inca), *(pi1 + 1))
-            bli_scopys(*(alpha1 + 2*inca), *(pi1 + 2))
-            bli_scopys(*(alpha1 + 3*inca), *(pi1 + 3))
-            bli_scopys(*(alpha1 + 4*inca), *(pi1 + 4))
-            bli_scopys(*(alpha1 + 5*inca), *(pi1 + 5))
-            bli_scopys(*(alpha1 + 6*inca), *(pi1 + 6))
-            bli_scopys(*(alpha1 + 7*inca), *(pi1 + 7))
-            bli_scopys(*(alpha1 + 8*inca), *(pi1 + 8))
-            bli_scopys(*(alpha1 + 9*inca), *(pi1 + 9))
-            bli_scopys(*(alpha1 + 10*inca), *(pi1 + 10))
-            bli_scopys(*(alpha1 + 11*inca), *(pi1 + 11))
-            bli_scopys(*(alpha1 + 12*inca), *(pi1 + 12))
-            bli_scopys(*(alpha1 + 13*inca), *(pi1 + 13))
-            bli_scopys(*(alpha1 + 14*inca), *(pi1 + 14))
-            bli_scopys(*(alpha1 + 15*inca), *(pi1 + 15))
-            bli_scopys(*(alpha1 + 16*inca), *(pi1 + 16))
-            bli_scopys(*(alpha1 + 17*inca), *(pi1 + 17))
-            bli_scopys(*(alpha1 + 18*inca), *(pi1 + 18))
-            bli_scopys(*(alpha1 + 19*inca), *(pi1 + 19))
-            bli_scopys(*(alpha1 + 20*inca), *(pi1 + 20))
-            bli_scopys(*(alpha1 + 21*inca), *(pi1 + 21))
-            bli_scopys(*(alpha1 + 22*inca), *(pi1 + 22))
-            bli_scopys(*(alpha1 + 23*inca), *(pi1 + 23))
-            bli_scopys(*(alpha1 + 24*inca), *(pi1 + 24))
-            bli_scopys(*(alpha1 + 25*inca), *(pi1 + 25))
-            bli_scopys(*(alpha1 + 26*inca), *(pi1 + 26))
-            bli_scopys(*(alpha1 + 27*inca), *(pi1 + 27))
-            bli_scopys(*(alpha1 + 28*inca), *(pi1 + 28))
-            bli_scopys(*(alpha1 + 29*inca), *(pi1 + 29))
-            bli_scopys(*(alpha1 + 30*inca), *(pi1 + 30))
-            bli_scopys(*(alpha1 + 31*inca), *(pi1 + 31))
-*/    
-            alpha1 += lda;
-            pi1    += ldp;
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	  if (bli_cntx_lowprec_in_use(cntx))
+	  {
+            for ( dim_t k = n; k != 0; --k )
+            {
+              bli_scopysconvert(*(alpha1 + 0*inca), *(pi1_lp + 0))
+              bli_scopysconvert(*(alpha1 + 1*inca), *(pi1_lp + 1))
+              bli_scopysconvert(*(alpha1 + 2*inca), *(pi1_lp + 2))
+              bli_scopysconvert(*(alpha1 + 3*inca), *(pi1_lp + 3))
+              bli_scopysconvert(*(alpha1 + 4*inca), *(pi1_lp + 4))
+              bli_scopysconvert(*(alpha1 + 5*inca), *(pi1_lp + 5))
+              bli_scopysconvert(*(alpha1 + 6*inca), *(pi1_lp + 6))
+              bli_scopysconvert(*(alpha1 + 7*inca), *(pi1_lp + 7))
+              bli_scopysconvert(*(alpha1 + 8*inca), *(pi1_lp + 8))
+              bli_scopysconvert(*(alpha1 + 9*inca), *(pi1_lp + 9))
+              bli_scopysconvert(*(alpha1 + 10*inca), *(pi1_lp + 10))
+              bli_scopysconvert(*(alpha1 + 11*inca), *(pi1_lp + 11))
+              bli_scopysconvert(*(alpha1 + 12*inca), *(pi1_lp + 12))
+              bli_scopysconvert(*(alpha1 + 13*inca), *(pi1_lp + 13))
+              bli_scopysconvert(*(alpha1 + 14*inca), *(pi1_lp + 14))
+              bli_scopysconvert(*(alpha1 + 15*inca), *(pi1_lp + 15))
+              bli_scopysconvert(*(alpha1 + 16*inca), *(pi1_lp + 16))
+              bli_scopysconvert(*(alpha1 + 17*inca), *(pi1_lp + 17))
+              bli_scopysconvert(*(alpha1 + 18*inca), *(pi1_lp + 18))
+              bli_scopysconvert(*(alpha1 + 19*inca), *(pi1_lp + 19))
+              bli_scopysconvert(*(alpha1 + 20*inca), *(pi1_lp + 20))
+              bli_scopysconvert(*(alpha1 + 21*inca), *(pi1_lp + 21))
+              bli_scopysconvert(*(alpha1 + 22*inca), *(pi1_lp + 22))
+              bli_scopysconvert(*(alpha1 + 23*inca), *(pi1_lp + 23))
+              bli_scopysconvert(*(alpha1 + 24*inca), *(pi1_lp + 24))
+              bli_scopysconvert(*(alpha1 + 25*inca), *(pi1_lp + 25))
+              bli_scopysconvert(*(alpha1 + 26*inca), *(pi1_lp + 26))
+              bli_scopysconvert(*(alpha1 + 27*inca), *(pi1_lp + 27))
+              bli_scopysconvert(*(alpha1 + 28*inca), *(pi1_lp + 28))
+              bli_scopysconvert(*(alpha1 + 29*inca), *(pi1_lp + 29))
+              bli_scopysconvert(*(alpha1 + 30*inca), *(pi1_lp + 30))
+              bli_scopysconvert(*(alpha1 + 31*inca), *(pi1_lp + 31))
+
+              alpha1 += lda;
+              pi1_lp += ldp;
+	    }
+	  }
+          else
+#endif
+	  {
+            for ( dim_t k = n; k != 0; --k )
+            {
+              bli_scopys(*(alpha1 + 0*inca), *(pi1 + 0))
+              bli_scopys(*(alpha1 + 1*inca), *(pi1 + 1))
+              bli_scopys(*(alpha1 + 2*inca), *(pi1 + 2))
+              bli_scopys(*(alpha1 + 3*inca), *(pi1 + 3))
+              bli_scopys(*(alpha1 + 4*inca), *(pi1 + 4))
+              bli_scopys(*(alpha1 + 5*inca), *(pi1 + 5))
+              bli_scopys(*(alpha1 + 6*inca), *(pi1 + 6))
+              bli_scopys(*(alpha1 + 7*inca), *(pi1 + 7))
+              bli_scopys(*(alpha1 + 8*inca), *(pi1 + 8))
+              bli_scopys(*(alpha1 + 9*inca), *(pi1 + 9))
+              bli_scopys(*(alpha1 + 10*inca), *(pi1 + 10))
+              bli_scopys(*(alpha1 + 11*inca), *(pi1 + 11))
+              bli_scopys(*(alpha1 + 12*inca), *(pi1 + 12))
+              bli_scopys(*(alpha1 + 13*inca), *(pi1 + 13))
+              bli_scopys(*(alpha1 + 14*inca), *(pi1 + 14))
+              bli_scopys(*(alpha1 + 15*inca), *(pi1 + 15))
+              bli_scopys(*(alpha1 + 16*inca), *(pi1 + 16))
+              bli_scopys(*(alpha1 + 17*inca), *(pi1 + 17))
+              bli_scopys(*(alpha1 + 18*inca), *(pi1 + 18))
+              bli_scopys(*(alpha1 + 19*inca), *(pi1 + 19))
+              bli_scopys(*(alpha1 + 20*inca), *(pi1 + 20))
+              bli_scopys(*(alpha1 + 21*inca), *(pi1 + 21))
+              bli_scopys(*(alpha1 + 22*inca), *(pi1 + 22))
+              bli_scopys(*(alpha1 + 23*inca), *(pi1 + 23))
+              bli_scopys(*(alpha1 + 24*inca), *(pi1 + 24))
+              bli_scopys(*(alpha1 + 25*inca), *(pi1 + 25))
+              bli_scopys(*(alpha1 + 26*inca), *(pi1 + 26))
+              bli_scopys(*(alpha1 + 27*inca), *(pi1 + 27))
+              bli_scopys(*(alpha1 + 28*inca), *(pi1 + 28))
+              bli_scopys(*(alpha1 + 29*inca), *(pi1 + 29))
+              bli_scopys(*(alpha1 + 30*inca), *(pi1 + 30))
+              bli_scopys(*(alpha1 + 31*inca), *(pi1 + 31))
+
+              alpha1 += lda;
+              pi1    += ldp;
+	    }
           }
         }
       }
       else //there is a kappa_cast
       {
-        for ( dim_t k = n; k != 0; --k )            
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_cntx_lowprec_in_use(cntx))
+	{
+          for ( dim_t k = n; k != 0; --k )
+          {
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 0*inca), *(pi1_lp + 0) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 1*inca), *(pi1_lp + 1) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 2*inca), *(pi1_lp + 2) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 3*inca), *(pi1_lp + 3) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 4*inca), *(pi1_lp + 4) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 5*inca), *(pi1_lp + 5) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 6*inca), *(pi1_lp + 6) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 7*inca), *(pi1_lp + 7) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 8*inca), *(pi1_lp + 8) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 9*inca), *(pi1_lp + 9) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 10*inca), *(pi1_lp + 10) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 11*inca), *(pi1_lp + 11) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 12*inca), *(pi1_lp + 12) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 13*inca), *(pi1_lp + 13) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 14*inca), *(pi1_lp + 14) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 15*inca), *(pi1_lp + 15) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 16*inca), *(pi1_lp + 16) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 17*inca), *(pi1_lp + 17) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 18*inca), *(pi1_lp + 18) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 19*inca), *(pi1_lp + 19) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 20*inca), *(pi1_lp + 20) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 21*inca), *(pi1_lp + 21) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 22*inca), *(pi1_lp + 22) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 23*inca), *(pi1_lp + 23) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 24*inca), *(pi1_lp + 24) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 25*inca), *(pi1_lp + 25) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 26*inca), *(pi1_lp + 26) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 27*inca), *(pi1_lp + 27) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 28*inca), *(pi1_lp + 28) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 29*inca), *(pi1_lp + 29) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 30*inca), *(pi1_lp + 30) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 31*inca), *(pi1_lp + 31) );
+
+            alpha1 += lda;
+            pi1_lp    += ldp;
+          }
+        }
+        else
+#endif
         {
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 0*inca), *(pi1 + 0) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 1*inca), *(pi1 + 1) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 2*inca), *(pi1 + 2) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 3*inca), *(pi1 + 3) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 4*inca), *(pi1 + 4) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 5*inca), *(pi1 + 5) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 6*inca), *(pi1 + 6) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 7*inca), *(pi1 + 7) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 8*inca), *(pi1 + 8) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 9*inca), *(pi1 + 9) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 10*inca), *(pi1 + 10) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 11*inca), *(pi1 + 11) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 12*inca), *(pi1 + 12) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 13*inca), *(pi1 + 13) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 14*inca), *(pi1 + 14) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 15*inca), *(pi1 + 15) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 16*inca), *(pi1 + 16) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 17*inca), *(pi1 + 17) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 18*inca), *(pi1 + 18) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 19*inca), *(pi1 + 19) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 20*inca), *(pi1 + 20) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 21*inca), *(pi1 + 21) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 22*inca), *(pi1 + 22) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 23*inca), *(pi1 + 23) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 24*inca), *(pi1 + 24) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 25*inca), *(pi1 + 25) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 26*inca), *(pi1 + 26) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 27*inca), *(pi1 + 27) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 28*inca), *(pi1 + 28) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 29*inca), *(pi1 + 29) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 30*inca), *(pi1 + 30) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 31*inca), *(pi1 + 31) );
-/*
-          bli_sscal2s( *kappa_cast, *(alpha1 + 0*inca), *(pi1 + 0) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 1*inca), *(pi1 + 1) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 2*inca), *(pi1 + 2) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 3*inca), *(pi1 + 3) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 4*inca), *(pi1 + 4) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 5*inca), *(pi1 + 5) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 6*inca), *(pi1 + 6) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 7*inca), *(pi1 + 7) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 8*inca), *(pi1 + 8) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 9*inca), *(pi1 + 9) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 10*inca), *(pi1 + 10) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 11*inca), *(pi1 + 11) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 12*inca), *(pi1 + 12) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 13*inca), *(pi1 + 13) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 14*inca), *(pi1 + 14) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 15*inca), *(pi1 + 15) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 16*inca), *(pi1 + 16) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 17*inca), *(pi1 + 17) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 18*inca), *(pi1 + 18) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 19*inca), *(pi1 + 19) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 20*inca), *(pi1 + 20) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 21*inca), *(pi1 + 21) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 22*inca), *(pi1 + 22) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 23*inca), *(pi1 + 23) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 24*inca), *(pi1 + 24) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 25*inca), *(pi1 + 25) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 26*inca), *(pi1 + 26) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 27*inca), *(pi1 + 27) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 28*inca), *(pi1 + 28) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 29*inca), *(pi1 + 29) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 30*inca), *(pi1 + 30) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 31*inca), *(pi1 + 31) );
-*/
-          alpha1 += lda;
-          pi1    += ldp;
+          for ( dim_t k = n; k != 0; --k )
+          {
+            bli_sscal2s( *kappa_cast, *(alpha1 + 0*inca), *(pi1 + 0) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 1*inca), *(pi1 + 1) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 2*inca), *(pi1 + 2) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 3*inca), *(pi1 + 3) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 4*inca), *(pi1 + 4) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 5*inca), *(pi1 + 5) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 6*inca), *(pi1 + 6) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 7*inca), *(pi1 + 7) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 8*inca), *(pi1 + 8) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 9*inca), *(pi1 + 9) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 10*inca), *(pi1 + 10) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 11*inca), *(pi1 + 11) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 12*inca), *(pi1 + 12) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 13*inca), *(pi1 + 13) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 14*inca), *(pi1 + 14) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 15*inca), *(pi1 + 15) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 16*inca), *(pi1 + 16) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 17*inca), *(pi1 + 17) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 18*inca), *(pi1 + 18) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 19*inca), *(pi1 + 19) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 20*inca), *(pi1 + 20) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 21*inca), *(pi1 + 21) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 22*inca), *(pi1 + 22) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 23*inca), *(pi1 + 23) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 24*inca), *(pi1 + 24) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 25*inca), *(pi1 + 25) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 26*inca), *(pi1 + 26) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 27*inca), *(pi1 + 27) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 28*inca), *(pi1 + 28) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 29*inca), *(pi1 + 29) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 30*inca), *(pi1 + 30) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 31*inca), *(pi1 + 31) );
+
+            alpha1 += lda;
+            pi1    += ldp;
+          }
         }
       }
     }
@@ -353,19 +331,34 @@ void bli_spackm_gemmini_32xk
     // then copy as-is and scale by kappa (not need to pack)
     {
 
-       bli_sscal2m_ex(
-               0,
-               BLIS_NONUNIT_DIAG,
-               BLIS_DENSE,
-               ( trans_t )conja,
-               cdim,
-               n,
-               kappa,
-               a, inca, lda,
-               p,    1, ldp,
-               cntx,
-               NULL
-             );
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_cntx_lowprec_in_use(cntx))
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < cdim; i++)
+            {
+              bli_sscal2sconvert( *kappa_cast, *(alpha1 + i*inca), *(pi1_lp + i) );
+            }
+
+            alpha1 += lda;
+            pi1_lp += ldp;
+          }
+        }
+        else
+#endif
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < cdim; i++)
+            {
+              bli_sscal2s( *kappa_cast, *(alpha1 + i*inca), *(pi1 + i) );
+            }
+
+            alpha1 += lda;
+            pi1    += ldp;
+          }
+        }
 
       // pad with zeros if the panel size is greater than the matrix size
 
@@ -375,8 +368,20 @@ void bli_spackm_gemmini_32xk
       float* restrict p_cast = p;
       float* restrict p_edge = p_cast + (i  )*1;
 
-      bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
-
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+      if (bli_cntx_lowprec_in_use(cntx))
+      {
+        elem_t* restrict p_edge_lp = (elem_t*)p_cast + (i  )*1;
+        for ( dim_t jj = 0; jj < n_edge; ++jj ) {
+        for ( dim_t ii = 0; ii < m_edge; ++ii ) {
+          *(p_edge_lp + ii + jj*ldp) = 0;
+        }}
+      }
+      else
+#endif
+      {
+        bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
+      }
     }
 
     // pad with zeros if there is a difference between the logical size and physical size
@@ -388,7 +393,19 @@ void bli_spackm_gemmini_32xk
       float* restrict p_cast = p;
       float* restrict p_edge = p_cast + (j  )*ldp;
 
-      bli_sset0s_mxn(m_edge, n_edge, p_edge, 1, ldp);
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+      if (bli_cntx_lowprec_in_use(cntx))
+      {
+        elem_t* restrict p_edge_lp = (elem_t*)p_cast + (j  )*ldp;
+        for ( dim_t jj = 0; jj < n_edge; ++jj )
+        for ( dim_t ii = 0; ii < m_edge; ++ii )
+          *(p_edge_lp + ii + jj*ldp) = 0;
+      }
+      else
+#endif
+      {
+        bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
+      }
     }
 
 }
@@ -409,7 +426,8 @@ void bli_spackm_gemmini_4xk
 {
     float*  restrict kappa_cast = kappa;
     float*  restrict alpha1     = a;
-    elem_t* restrict pi1       = (elem_t*)p;
+    float* restrict pi1         = p;
+    elem_t* restrict pi1_lp       = (elem_t*)p;
 
     dim_t           mnr        = 4;
 
@@ -432,39 +450,65 @@ void bli_spackm_gemmini_4xk
         }
         else
         {
-          for ( dim_t k = n; k != 0; --k )
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	  if (bli_cntx_lowprec_in_use(cntx))
+	  {
+            for ( dim_t k = n; k != 0; --k )
+            {
+              bli_scopysconvert(*(alpha1 + 0*inca), *(pi1_lp + 0))
+              bli_scopysconvert(*(alpha1 + 1*inca), *(pi1_lp + 1))
+              bli_scopysconvert(*(alpha1 + 2*inca), *(pi1_lp + 2))
+              bli_scopysconvert(*(alpha1 + 3*inca), *(pi1_lp + 3))
+
+              alpha1 += lda;
+              pi1_lp += ldp;
+            }
+          }
+          else
+#endif
           {
-            bli_scopysconvert(*(alpha1 + 0*inca), *(pi1 + 0))
-            bli_scopysconvert(*(alpha1 + 1*inca), *(pi1 + 1))
-            bli_scopysconvert(*(alpha1 + 2*inca), *(pi1 + 2))
-            bli_scopysconvert(*(alpha1 + 3*inca), *(pi1 + 3))
-/*
-            bli_scopys(*(alpha1 + 0*inca), *(pi1 + 0))
-            bli_scopys(*(alpha1 + 1*inca), *(pi1 + 1))
-            bli_scopys(*(alpha1 + 2*inca), *(pi1 + 2))
-            bli_scopys(*(alpha1 + 3*inca), *(pi1 + 3))
-*/ 
-            alpha1 += lda;
-            pi1    += ldp;
+            for ( dim_t k = n; k != 0; --k )
+            {
+              bli_scopys(*(alpha1 + 0*inca), *(pi1 + 0))
+              bli_scopys(*(alpha1 + 1*inca), *(pi1 + 1))
+              bli_scopys(*(alpha1 + 2*inca), *(pi1 + 2))
+              bli_scopys(*(alpha1 + 3*inca), *(pi1 + 3))
+
+              alpha1 += lda;
+              pi1    += ldp;
+            }
           }
         }
       }
       else //there is a kappa_cast
       {
-        for ( dim_t k = n; k != 0; --k ) 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_cntx_lowprec_in_use(cntx))
+	{
+          for ( dim_t k = n; k != 0; --k )
+          {
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 0*inca), *(pi1_lp + 0) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 1*inca), *(pi1_lp + 1) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 2*inca), *(pi1_lp + 2) );
+            bli_sscal2sconvert( *kappa_cast, *(alpha1 + 3*inca), *(pi1_lp + 3) );
+
+            alpha1 += lda;
+            pi1_lp += ldp;
+          }
+        }
+        else
+#endif
         {
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 0*inca), *(pi1 + 0) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 1*inca), *(pi1 + 1) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 2*inca), *(pi1 + 2) );
-          bli_sscal2sconvert( *kappa_cast, *(alpha1 + 3*inca), *(pi1 + 3) );
-/*
-          bli_sscal2s( *kappa_cast, *(alpha1 + 0*inca), *(pi1 + 0) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 1*inca), *(pi1 + 1) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 2*inca), *(pi1 + 2) );
-          bli_sscal2s( *kappa_cast, *(alpha1 + 3*inca), *(pi1 + 3) );
-*/
-          alpha1 += lda;
-          pi1    += ldp;
+          for ( dim_t k = n; k != 0; --k )
+          {
+            bli_sscal2s( *kappa_cast, *(alpha1 + 0*inca), *(pi1 + 0) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 1*inca), *(pi1 + 1) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 2*inca), *(pi1 + 2) );
+            bli_sscal2s( *kappa_cast, *(alpha1 + 3*inca), *(pi1 + 3) );
+
+            alpha1 += lda;
+            pi1    += ldp;
+          }
         }
       }
     }
@@ -473,19 +517,34 @@ void bli_spackm_gemmini_4xk
     // then copy as-is and scale by kappa (not need to pack)
     {
 
-       bli_sscal2m_ex(
-               0,
-               BLIS_NONUNIT_DIAG,
-               BLIS_DENSE,
-               ( trans_t )conja,
-               cdim,
-               n,
-               kappa,
-               a, inca, lda,
-               p,    1, ldp,
-               cntx,
-               NULL
-             );
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_cntx_lowprec_in_use(cntx))
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < cdim; i++)
+            {
+              bli_sscal2sconvert( *kappa_cast, *(alpha1 + i*inca), *(pi1_lp + i) );
+            }
+
+            alpha1 += lda;
+            pi1_lp += ldp;
+          }
+        }
+        else
+#endif
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < cdim; i++)
+            {
+              bli_sscal2s( *kappa_cast, *(alpha1 + i*inca), *(pi1 + i) );
+            }
+
+            alpha1 += lda;
+            pi1    += ldp;
+          }
+        }
 
       // pad with zeros if the panel size is greater than the matrix size
 
@@ -495,8 +554,20 @@ void bli_spackm_gemmini_4xk
       float* restrict p_cast = p;
       float* restrict p_edge = p_cast + (i  )*1;
 
-      bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
-
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+      if (bli_cntx_lowprec_in_use(cntx))
+      {
+        elem_t* restrict p_edge_lp = (elem_t*)p_cast + (i  )*1;
+        for ( dim_t jj = 0; jj < n_edge; ++jj ) {
+        for ( dim_t ii = 0; ii < m_edge; ++ii ) {
+          *(p_edge_lp + ii + jj*ldp) = 0;
+        }}
+      }
+      else
+#endif
+      {
+        bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
+      }
     }
 
     // pad with zeros if there is a difference between the logical size and physical size
@@ -508,7 +579,19 @@ void bli_spackm_gemmini_4xk
       float* restrict p_cast = p;
       float* restrict p_edge = p_cast + (j  )*ldp;
 
-      bli_sset0s_mxn(m_edge, n_edge, p_edge, 1, ldp);
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+      if (bli_cntx_lowprec_in_use(cntx))
+      {
+        elem_t* restrict p_edge_lp = (elem_t*)p_cast + (j  )*ldp;
+        for ( dim_t jj = 0; jj < n_edge; ++jj )
+        for ( dim_t ii = 0; ii < m_edge; ++ii )
+          *(p_edge_lp + ii + jj*ldp) = 0;
+      }
+      else
+#endif
+      {
+        bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
+      }
     }
 
 }
@@ -529,9 +612,10 @@ void bli_spackm_gemmini_cxk
        cntx_t* restrict cntx
      )
 {
-    float* restrict kappa_cast = kappa;
-    float* restrict alpha1     = a;
-    float* restrict pi1        = p;
+    float*  restrict kappa_cast = kappa;
+    float*  restrict alpha1     = a;
+    float*  restrict pi1        = p;
+    elem_t* restrict pi1_lp     = (elem_t*)p;
 
     dim_t           mnr        = BLIS_MR;
 
@@ -553,30 +637,63 @@ void bli_spackm_gemmini_cxk
         }
         else
         {
-          for ( dim_t k = n; k != 0; --k )
-          {
-            for ( int i = 0; i < mnr; i++)
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	  if (bli_cntx_lowprec_in_use(cntx))
+	  {
+            for ( dim_t k = n; k != 0; --k )
             {
-              bli_scopysconvert(*(alpha1 + i*inca), *(pi1 + i))
-              //bli_scopys(*(alpha1 + i*inca), *(pi1 + i))
-            }    
-            alpha1 += lda;
-            pi1    += ldp;
+              for ( int i = 0; i < mnr; i++)
+              {
+                bli_scopysconvert(*(alpha1 + i*inca), *(pi1_lp + i))
+              }
+              alpha1 += lda;
+              pi1_lp += ldp;
+            }
+          }
+          else
+#endif
+          {
+            for ( dim_t k = n; k != 0; --k )
+            {
+              for ( int i = 0; i < mnr; i++)
+              {
+                bli_scopys(*(alpha1 + i*inca), *(pi1 + i))
+              }
+              alpha1 += lda;
+              pi1    += ldp;
+            }
           }
         }
       }
       else //there is a kappa_cast
       {
-        for ( dim_t k = n; k != 0; --k )            
-        {
-          for ( int i = 0; i < mnr; i++)
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_cntx_lowprec_in_use(cntx))
+	{
+          for ( dim_t k = n; k != 0; --k )
           {
-            bli_sscal2sconvert( *kappa_cast, *(alpha1 + i*inca), *(pi1 + i) );
-            //bli_sscal2s( *kappa_cast, *(alpha1 + i*inca), *(pi1 + i) );
-          }
+            for ( int i = 0; i < mnr; i++)
+            {
+              bli_sscal2sconvert( *kappa_cast, *(alpha1 + i*inca), *(pi1_lp + i) );
+            }
 
-          alpha1 += lda;
-          pi1    += ldp;
+            alpha1 += lda;
+            pi1_lp += ldp;
+          }
+        }
+        else
+#endif
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < mnr; i++)
+            {
+              bli_sscal2s( *kappa_cast, *(alpha1 + i*inca), *(pi1 + i) );
+            }
+
+            alpha1 += lda;
+            pi1    += ldp;
+          }
         }
       }
     }
@@ -585,19 +702,34 @@ void bli_spackm_gemmini_cxk
     // then copy as-is and scale by kappa (not need to pack)
     {
 
-       bli_sscal2m_ex(
-               0,
-               BLIS_NONUNIT_DIAG,
-               BLIS_DENSE,
-               ( trans_t )conja,
-               cdim,
-               n,
-               kappa,
-               a, inca, lda,
-               p,    1, ldp,
-               cntx,
-               NULL
-             );
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_cntx_lowprec_in_use(cntx))
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < cdim; i++)
+            {
+              bli_sscal2sconvert( *kappa_cast, *(alpha1 + i*inca), *(pi1_lp + i) );
+            }
+
+            alpha1 += lda;
+            pi1_lp += ldp;
+          }
+        }
+        else
+#endif
+        {
+          for ( dim_t k = n; k != 0; --k )
+          {
+            for ( int i = 0; i < cdim; i++)
+            {
+              bli_sscal2s( *kappa_cast, *(alpha1 + i*inca), *(pi1 + i) );
+            }
+
+            alpha1 += lda;
+            pi1    += ldp;
+          }
+        }
 
       // pad with zeros if the panel size is greater than the matrix size
 
@@ -607,8 +739,20 @@ void bli_spackm_gemmini_cxk
       float* restrict p_cast = p;
       float* restrict p_edge = p_cast + (i  )*1;
 
-      bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
-
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+      if (bli_cntx_lowprec_in_use(cntx))
+      {
+        elem_t* restrict p_edge_lp = (elem_t*)p_cast + (i  )*1;
+        for ( dim_t jj = 0; jj < n_edge; ++jj ) {
+        for ( dim_t ii = 0; ii < m_edge; ++ii ) {
+          *(p_edge_lp + ii + jj*ldp) = 0;
+        }}
+      }
+      else
+#endif
+      {
+        bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
+      }
     }
 
     // pad with zeros if there is a difference between the logical size and physical size
@@ -620,7 +764,18 @@ void bli_spackm_gemmini_cxk
       float* restrict p_cast = p;
       float* restrict p_edge = p_cast + (j  )*ldp;
 
-      bli_sset0s_mxn(m_edge, n_edge, p_edge, 1, ldp);
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+      if (bli_cntx_lowprec_in_use(cntx))
+      {
+        elem_t* restrict p_edge_lp = (elem_t*)p_cast + (j  )*ldp;
+        for ( dim_t jj = 0; jj < n_edge; ++jj )
+        for ( dim_t ii = 0; ii < m_edge; ++ii )
+          *(p_edge_lp + ii + jj*ldp) = 0;
+      }
+      else
+#endif
+      {
+        bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
+      }
     }
-
 }
