@@ -418,11 +418,15 @@ void PASTEMAC(ch,varname) \
 				a10 = a1; \
 				/* a11 = a1 + ( k_a10 * PACKMR ) / off_scl; */ \
 				a11 = bli_ptr_inc_by_frac( a1, sizeof( ctype ), k_a10 * PACKMR, off_scl ); \
+				if (bli_cntx_lowprec_in_use(cntx)) \
+					a11 = (ctype*)bli_ptr_inc_by_frac( (elem_t*)a1, sizeof( elem_t ), k_a10 * PACKMR, off_scl ); \
 \
 				/* Compute the addresses of the panel B01 and the block
 				   B11. */ \
 				b01 = b1 + ( off_a10 * PACKNR ) / off_scl; \
 				b11 = b1 + ( off_a11 * PACKNR ) / off_scl; \
+				if (bli_cntx_lowprec_in_use(cntx)) \
+					b11 = (ctype*)((elem_t*)b1 + ( off_a11 * PACKNR ) / off_scl); \
 \
 				/* Compute the addresses of the next panels of A and B. */ \
 				a2 = a1 + ps_a_cur; \

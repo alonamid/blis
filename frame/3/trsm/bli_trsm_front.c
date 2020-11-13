@@ -52,6 +52,11 @@ void bli_trsm_front
 	obj_t   b_local;
 	obj_t   c_local;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
+
 #ifdef BLIS_ENABLE_SMALL_MATRIX_TRSM
 	gint_t status = bli_trsm_small( side, alpha, a, b, cntx, cntl );
 	if ( status == BLIS_SUCCESS ) return;
@@ -173,5 +178,11 @@ void bli_trsm_front
 	  rntm,
 	  cntl
 	);
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 0);
+#endif
+
 }
 

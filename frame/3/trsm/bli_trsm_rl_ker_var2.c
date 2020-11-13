@@ -416,6 +416,8 @@ void PASTEMAC(ch,varname) \
 			b11       = b1; \
 			/* b21 = b1 + ( k_b11 * PACKNR ) / off_scl; */ \
 			b21 = bli_ptr_inc_by_frac( b1, sizeof( ctype ), k_b11 * PACKNR, off_scl ); \
+			if (bli_cntx_lowprec_in_use(cntx)) \
+				b21 = (ctype*)bli_ptr_inc_by_frac( (elem_t*)b1, sizeof( elem_t ), k_b11 * PACKNR, off_scl ); \
 \
 			/* Compute the panel stride for the current micro-panel. */ \
 			is_b_cur  = k_b1121 * PACKNR; \
@@ -442,6 +444,10 @@ void PASTEMAC(ch,varname) \
 				/* Compute the addresses of the A11 block and A12 panel. */ \
 				a11  = a1 + ( off_b11 * PACKMR ) / off_scl; \
 				a12  = a1 + ( off_b21 * PACKMR ) / off_scl; \
+				if (bli_cntx_lowprec_in_use(cntx)) { \
+					a11 = (ctype*)((elem_t*)a1 + ( off_b11 * PACKMR ) / off_scl); \
+					a12 = (ctype*)((elem_t*)a1 + ( off_b21 * PACKMR ) / off_scl); \
+				} \
 \
 				/* Compute the addresses of the next panels of A and B. */ \
 				a2 = a1; \
