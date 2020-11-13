@@ -4,7 +4,7 @@
    An object-based framework for developing high-performance BLAS-like
    libraries.
 
-   Copyright (C) 2019, The University of Texas at Austin
+   Copyright (C) 2014, The University of Texas at Austin
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -32,25 +32,84 @@
 
 */
 
-// -- l1 --
-INVERTV_KER_PROT( float, s, invertv_lowprec)
-SETV_KER_PROT( float, s, setv_lowprec)
-SCALV_KER_PROT( float, s, scalv_lowprec)
-SCAL2V_KER_PROT( float, s, scal2v_lowprec)
+#include "blis.h"
 
-// -- packing --
-PACKM_KER_PROT( float,   s, packm_gemmini_32xk )
-PACKM_KER_PROT( float,   s, packm_gemmini_4xk )
-PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
+void bli_sscalv_lowprec
+     (
+       conj_t           conjalpha,
+       dim_t            n,
+       float*  restrict alpha,
+       float*  restrict x, inc_t incx,
+       cntx_t* restrict cntx
+     )
+{
+	if ( bli_zero_dim1( n ) ) return;
 
-// -- level-3 --
+	/* If alpha is one, return. */
+	if ( bli_seq1( *alpha ) ) return;
 
-// gemm (asm d12x6)
-TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
-TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
-GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
-GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
+	/* If alpha is zero, use setv. */
+	if ( bli_seq0( *alpha ) )
+	{
+		float* zero = bli_s0;
+	
+		bli_ssetv_lowprec
+		(
+		  BLIS_NO_CONJUGATE,
+		  n,
+		  zero,
+		  x, incx,
+		  cntx
+		);
+		return;
+	}
+
+	float alpha_conj;
+
+	bli_scopycjs( conjalpha, *alpha, alpha_conj );
+
+	if (bli_cntx_lowprec_in_use(cntx))
+	{
+		elem_t* restrict x_elem = (elem_t*)x;
+		float x_f;
+
+		if ( incx == 1 )
+		{
+			for ( dim_t i = 0; i < n; ++i )
+			{
+				bli_tofloat(x_elem[i], x_f);
+				bli_sscals( alpha_conj, x_f );
+				bli_tolowprec(x_f, x_elem[i]);
+			}
+		}
+		else
+		{
+			for ( dim_t i = 0; i < n; ++i )
+			{
+				bli_tofloat(*x_elem, x_f);
+				bli_sscals( alpha_conj, x_f );
+				bli_tolowprec(x_f, *x_elem);
+	
+				x_elem += incx;
+			}
+		}
+	} else {
+
+		if ( incx == 1 )
+		{
+			for ( dim_t i = 0; i < n; ++i )
+			{
+				bli_sscals( alpha_conj, x[i] );
+			}
+		}
+		else
+		{
+			for ( dim_t i = 0; i < n; ++i )
+			{
+				bli_sscals( alpha_conj, *x );
+	
+				x += incx;
+			}
+		}
+	}
+}

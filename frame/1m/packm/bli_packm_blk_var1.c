@@ -156,6 +156,12 @@ void bli_packm_blk_var1
 
 	FUNCPTR_T f;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( c ) == BLIS_FLOAT && bli_cntx_lowprec_in_use(cntx))
+        {
+                bli_obj_set_elem_size(sizeof(elem_t), p);
+        }
+#endif
 
 	// Treatment of kappa (ie: packing during scaling) depends on
 	// whether we are executing an induced method.

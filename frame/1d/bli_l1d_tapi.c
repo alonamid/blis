@@ -238,6 +238,8 @@ void PASTEMAC2(ch,opname,EX_SUF) \
 	/* Obtain a valid context from the gks if necessary. */ \
 	if ( cntx == NULL ) cntx = bli_gks_query_cntx(); \
 \
+	if (bli_cntx_lowprec_in_use(cntx)) x1 = (ctype*)((elem_t*)x + offx); \
+\
 	/* Query the context for the operation's kernel address. */ \
 	PASTECH2(ch,kername,_ker_ft) f = bli_cntx_get_l1v_ker_dt( dt, kerid, cntx ); \
 \
@@ -294,6 +296,8 @@ void PASTEMAC2(ch,opname,EX_SUF) \
 \
 	/* Obtain a valid context from the gks if necessary. */ \
 	if ( cntx == NULL ) cntx = bli_gks_query_cntx(); \
+\
+	if (bli_cntx_lowprec_in_use(cntx)) x1 = (ctype*)((elem_t*)x + offx); \
 \
 	/* Query the context for the operation's kernel address. */ \
 	PASTECH2(ch,kername,_ker_ft) f = bli_cntx_get_l1v_ker_dt( dt, kerid, cntx ); \

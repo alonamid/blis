@@ -211,6 +211,11 @@ void PASTEMAC(ch,opname) \
 \
 			x1     = x + (j  )*ldx + (0  )*incx; \
 			y1     = y + (j  )*ldy + (0  )*incy; \
+			if (bli_cntx_lowprec_in_use(cntx)) \
+			{ \
+				x1 = (ctype*)((elem_t*)x + (j  )*ldx + (0  )*incx); \
+				y1 = (ctype*)((elem_t*)y + (j  )*ldy + (0  )*incy); \
+			} \
 \
 			/* Invoke the kernel with the appropriate parameters. */ \
 			f( \
@@ -233,6 +238,11 @@ void PASTEMAC(ch,opname) \
 \
 				x1     = x + (ij0+j  )*ldx + (0  )*incx; \
 				y1     = y + (ij0+j  )*ldy + (0  )*incy; \
+				if (bli_cntx_lowprec_in_use(cntx)) \
+				{ \
+					x1 = (ctype*)((elem_t*)x + (ij0+j  )*ldx + (0  )*incx); \
+					y1 = (ctype*)((elem_t*)y + (ij0+j  )*ldy + (0  )*incy); \
+				} \
 \
 				/* Invoke the kernel with the appropriate parameters. */ \
 				f( \
@@ -254,6 +264,11 @@ void PASTEMAC(ch,opname) \
 \
 				x1     = x + (j  )*ldx + (ij0+i  )*incx; \
 				y1     = y + (j  )*ldy + (ij0+i  )*incy; \
+				if (bli_cntx_lowprec_in_use(cntx)) \
+				{ \
+					x1 = (ctype*)((elem_t*)x + (j  )*ldx + (ij0+i  )*incx); \
+					y1 = (ctype*)((elem_t*)y + (j  )*ldy + (ij0+i  )*incy); \
+				} \
 \
 				/* Invoke the kernel with the appropriate parameters. */ \
 				f( \
@@ -322,6 +337,7 @@ void PASTEMAC(ch,opname) \
 			n_elem = n_elem_max; \
 \
 			x1     = x + (j  )*ldx + (0  )*incx; \
+			if (bli_cntx_lowprec_in_use(cntx)) x1 = (ctype*)((elem_t*)x + (j  )*ldx + (0  )*incx); \
 \
 			/* Invoke the kernel with the appropriate parameters. */ \
 			f( \
@@ -342,6 +358,7 @@ void PASTEMAC(ch,opname) \
 				n_elem = bli_min( n_shift + j + 1, n_elem_max ); \
 \
 				x1     = x + (ij0+j  )*ldx + (0  )*incx; \
+				if (bli_cntx_lowprec_in_use(cntx)) x1 = (ctype*)((elem_t*)x + (ij0+j  )*ldx + (0  )*incx); \
 \
 				/* Invoke the kernel with the appropriate parameters. */ \
 				f( \
@@ -361,6 +378,7 @@ void PASTEMAC(ch,opname) \
 				n_elem = n_elem_max - i; \
 \
 				x1     = x + (j  )*ldx + (ij0+i  )*incx; \
+				if (bli_cntx_lowprec_in_use(cntx)) x1 = (ctype*)((elem_t*)x + (j  )*ldx + (ij0+i  )*incx); \
 \
 				/* Invoke the kernel with the appropriate parameters. */ \
 				f( \
