@@ -1445,6 +1445,9 @@ typedef struct cntx_s
 	pack_t    schema_b_panel;
 	pack_t    schema_c_panel;
 
+	bool_t    lowprec_in_use;
+	bool_t    lowprec_elem_out;
+
 } cntx_t;
 
 
