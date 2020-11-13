@@ -41,7 +41,7 @@
 static char*     op_str                    = "trsm_ukr";
 static char*     o_types                   = "m";  // c
 static char*     p_types                   = "u";  // uploa
-static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-04, 1e-05 },   // warn, pass for s
+static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-02, 1e-03 },   // warn, pass for s
                                                { 1e-04, 1e-05 },   // warn, pass for c
                                                { 1e-13, 1e-14 },   // warn, pass for d
                                                { 1e-13, 1e-14 } }; // warn, pass for z
@@ -303,6 +303,9 @@ void libblis_test_trsm_ukr_experiment
 	bli_obj_set_uplo( uploa, &ap );
 
 	// Pack the data from the source objects.
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( &a ) == BLIS_FLOAT) bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
 	bli_packm_blk_var1( &a, &ap, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
 	bli_packm_blk_var1( &b, &bp, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
 
@@ -334,7 +337,29 @@ bli_printm( "ap", &ap, "%5.2f", "" );
 	if ( bli_obj_is_complex( &b ) ) *perf *= 4.0;
 
 	// Perform checks.
-	libblis_test_trsm_ukr_check( params, side, &ap, &c, &b, resid );
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_obj_dt( &ap ) == BLIS_FLOAT)
+        {
+		bli_cntx_set_lowprec_in_use(cntx, 0);
+		obj_t        ap_check;
+		bli_obj_create( datatype, ldap, m, 1, ldap, &ap_check );
+		void* buf_ap_check = bli_obj_buffer( &ap_check );
+		bli_packm_init_pack( BLIS_INVERT_DIAG, BLIS_PACKED_ROW_PANELS,
+		                     BLIS_PACK_FWD_IF_UPPER, BLIS_PACK_FWD_IF_LOWER,
+		                     BLIS_MR, BLIS_KR, &a, &ap_check, cntx );
+		bli_obj_set_buffer( buf_ap_check, &ap_check );
+		bli_obj_set_diag_offset( 0, &ap_check );
+		bli_obj_set_uplo( uploa, &ap_check );
+		bli_packm_blk_var1( &a, &ap_check, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
+		libblis_test_trsm_ukr_check( params, side, &ap_check, &c, &b, resid );
+		bli_obj_free( &ap_check );
+	}
+	else
+#else
+	{
+		libblis_test_trsm_ukr_check( params, side, &ap, &c, &b, resid );
+	}
+#endif
 
 	// Zero out performance and residual if output matrix is empty.
 	//libblis_test_check_empty_problem( &c, perf, resid );

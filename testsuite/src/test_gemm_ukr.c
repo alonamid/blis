@@ -41,7 +41,7 @@
 static char*     op_str                    = "gemm_ukr";
 static char*     o_types                   = "m"; // c
 static char*     p_types                   = "";
-static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-04, 1e-05 },   // warn, pass for s
+static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-02, 1e-03 },   // warn, pass for s
                                                { 1e-04, 1e-05 },   // warn, pass for c
                                                { 1e-13, 1e-14 },   // warn, pass for d
                                                { 1e-13, 1e-14 } }; // warn, pass for z
@@ -294,6 +294,9 @@ void libblis_test_gemm_ukr_experiment
 	bli_obj_set_buffer( buf_bp, &bp );
 
 	// Pack the data from the source objects.
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_obj_dt( &a ) == BLIS_FLOAT) bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
 	bli_packm_blk_var1( &a, &ap, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
 	bli_packm_blk_var1( &b, &bp, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
 
@@ -316,6 +319,9 @@ void libblis_test_gemm_ukr_experiment
 	if ( bli_obj_is_complex( &c ) ) *perf *= 4.0;
 
 	// Perform checks.
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	bli_cntx_set_lowprec_in_use(cntx, 0);
+#endif
 	libblis_test_gemm_ukr_check( params, &alpha, &a, &b, &beta, &c, &c_save, resid );
 
 	// Zero out performance and residual if output matrix is empty.

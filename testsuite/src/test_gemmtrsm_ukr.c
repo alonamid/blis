@@ -41,7 +41,7 @@
 static char*     op_str                    = "gemmtrsm_ukr";
 static char*     o_types                   = "m";  // c11
 static char*     p_types                   = "u";  // uploa
-static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-04, 1e-05 },   // warn, pass for s
+static thresh_t  thresh[BLIS_NUM_FP_TYPES] = { { 1e-02, 1e-03 },   // warn, pass for s
                                                { 1e-04, 1e-05 },   // warn, pass for c
                                                { 1e-13, 1e-14 },   // warn, pass for d
                                                { 1e-13, 1e-14 } }; // warn, pass for z
@@ -358,6 +358,9 @@ void libblis_test_gemmtrsm_ukr_experiment
 	bli_obj_set_uplo( uploa, &ap );
 
 	// Pack the data from the source objects.
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_obj_dt( &a ) == BLIS_FLOAT) bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
 	bli_packm_blk_var1( &a, &ap, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
 	bli_packm_blk_var1( &b, &bp, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
 
@@ -420,6 +423,50 @@ bli_printm( "ap", &ap, "%5.2f", "" );
 	}
 
 	// Perform checks.
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+	if (bli_obj_dt( &ap ) == BLIS_FLOAT)
+	{
+		bli_cntx_set_lowprec_in_use(cntx, 0);
+		obj_t        ap_check, bp_check, b11p_save;
+		bli_obj_init_full_shallow_copy_of( &b11p, &b11p_save );
+		bli_copym( &b11p, &b11p_save );
+		bli_obj_create( datatype, ldap, k+m, 1, ldap, &ap_check );
+		bli_obj_create( datatype, k+m, ldbp, ldbp, 1, &bp_check );
+		bli_obj_set_length( m, &ap_check );
+		bli_obj_set_width( n, &bp_check );
+		void* buf_ap_check = bli_obj_buffer( &ap_check );
+		void* buf_bp_check = bli_obj_buffer( &bp_check );
+		bli_packm_init_pack( BLIS_INVERT_DIAG, BLIS_PACKED_ROW_PANELS,
+				BLIS_PACK_FWD_IF_UPPER, BLIS_PACK_FWD_IF_LOWER,
+				BLIS_MR, BLIS_KR, &a, &ap_check, cntx );
+		bli_packm_init_pack( BLIS_NO_INVERT_DIAG, BLIS_PACKED_COL_PANELS,
+				BLIS_PACK_FWD_IF_UPPER, BLIS_PACK_FWD_IF_LOWER,
+				BLIS_KR, BLIS_NR, &b, &bp_check, cntx );
+		bli_obj_set_buffer( buf_ap_check, &ap_check );
+		bli_obj_set_buffer( buf_bp_check, &bp_check );
+		if ( bli_is_lower( uploa ) ) { bli_obj_set_diag_offset( k, &ap_check ); }
+		else                         { bli_obj_set_diag_offset( 0, &ap_check ); }
+		bli_obj_set_uplo( uploa, &ap_check );
+		bli_packm_blk_var1( &a, &ap_check, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
+		bli_packm_blk_var1( &b, &bp_check, cntx, NULL, &BLIS_PACKM_SINGLE_THREADED );
+		bli_gemmtrsm_ukr_make_subparts( k, &ap_check, &bp_check,
+						&a1xp, &a11p, &bx1p, &b11p );
+
+		elem_t*     buf_b11p_save     = bli_obj_buffer_at_off( &b11p_save );
+		float*     buf_b11p     = bli_obj_buffer_at_off( &b11p );
+		for (int ii = 0; ii < bli_obj_length( &b11p ); ++ii )
+		{
+			for (int jj = 0; jj < bli_obj_length( &b11p ); ++jj )
+			{
+				bli_tofloat(*(buf_b11p_save + ii*bli_obj_row_stride( &b11p_save ) + jj*bli_obj_col_stride( &b11p_save )),
+				            *(buf_b11p + ii*bli_obj_row_stride( &b11p ) + jj*bli_obj_col_stride( &b11p )));
+			}
+		}
+		bli_obj_set_uplo( uploa, &a11p );
+		bli_obj_free( &ap_check );
+		bli_obj_free( &bp_check );
+	}
+#endif
 	libblis_test_gemmtrsm_ukr_check( params, side, &alpha,
 	                                 &a1xp, &a11p, &bx1p, &b11p, &c11, &c11_save, resid );
 
