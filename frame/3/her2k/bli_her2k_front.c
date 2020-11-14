@@ -55,6 +55,11 @@ void bli_her2k_front
 	obj_t    b_local;
 	obj_t    ah_local;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
+
 	// Check parameters.
 	if ( bli_error_checking_is_enabled() )
 		bli_her2k_check( alpha, a, b, beta, c, cntx );
@@ -180,5 +185,10 @@ void bli_her2k_front
 	// non-zero values. To prevent this, we explicitly set those values
 	// to zero before returning.
 	bli_setid( &BLIS_ZERO, &c_local );
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 0);
+#endif
 }
 

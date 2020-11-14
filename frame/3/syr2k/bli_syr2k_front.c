@@ -54,6 +54,11 @@ void bli_syr2k_front
 	obj_t    b_local;
 	obj_t    at_local;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
+
 	// Check parameters.
 	if ( bli_error_checking_is_enabled() )
 		bli_syr2k_check( alpha, a, b, beta, c, cntx );
@@ -153,5 +158,10 @@ void bli_syr2k_front
 	  rntm,
 	  cntl
 	);
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 0);
+#endif
 }
 

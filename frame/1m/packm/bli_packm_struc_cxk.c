@@ -392,6 +392,7 @@ void PASTEMAC(ch,varname) \
 			j          = p10_len; \
 			diagoffc12 = diagoffc_abs - j; \
 			p12        = p + (j  )*ldp; \
+			if (bli_cntx_lowprec_in_use(cntx)) p12 = (ctype*)((elem_t*)p + (j  )*ldp); \
 			c12        = c + (j  )*ldc; \
 			c12        = c12 + diagoffc12 * ( doff_t )cs_c + \
 			                  -diagoffc12 * ( doff_t )rs_c;  \
@@ -420,6 +421,7 @@ void PASTEMAC(ch,varname) \
 			p12_len    = panel_len - p10_len; \
 			j          = p10_len; \
 			p12        = p + (j  )*ldp; \
+			if (bli_cntx_lowprec_in_use(cntx)) p12 = (ctype*)((elem_t*)p + (j  )*ldp); \
 			c12        = c + (j  )*ldc; \
 			incc12     = incc; \
 			ldc12      = ldc; \
@@ -476,6 +478,11 @@ void PASTEMAC(ch,varname) \
 			dim_t           j2     = diagoffc_abs; \
 			ctype* restrict c11    = c + (j2 )*ldc; \
 			ctype* restrict p11    = p + (j2 )*ldp; \
+			if (bli_cntx_lowprec_in_use(cntx)) \
+			{ \
+				bli_cntx_set_lowprec_elem_out(cntx, 1); \
+				p11 = (ctype*)((elem_t*)p + (j2 )*ldp); \
+			}\
 			trans_t         transc = ( trans_t )conjc; \
 \
 			PASTEMAC2(ch,copym,BLIS_TAPI_EX_SUF) \
@@ -491,6 +498,7 @@ void PASTEMAC(ch,varname) \
 			  cntx, \
 			  NULL  \
 			); \
+			if (bli_cntx_lowprec_in_use(cntx)) bli_cntx_set_lowprec_elem_out(cntx, 0); \
 \
 			/* If source matrix c is Hermitian, we have to zero out the
 			   imaginary components of the diagonal of p11 in case the

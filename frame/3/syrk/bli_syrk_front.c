@@ -52,6 +52,11 @@ void bli_syrk_front
 	obj_t   at_local;
 	obj_t   c_local;
 
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 1);
+#endif
+
 	// Alias A and C in case we need to apply transformations.
 	bli_obj_alias_to( a, &a_local );
 	bli_obj_alias_to( c, &c_local );
@@ -133,5 +138,10 @@ void bli_syrk_front
 	  rntm,
 	  cntl
 	);
+
+#ifdef ELEM_T_IS_LOWPREC_FLOAT
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+                bli_cntx_set_lowprec_in_use(cntx, 0);
+#endif
 }
 
