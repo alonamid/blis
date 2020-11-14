@@ -94,6 +94,7 @@ void PASTEMAC(ch,opname) \
 \
 			x1     = x + (j  )*ldx + (0  )*incx; \
 			y1     = y + (j  )*ldy + (0  )*incy; \
+			if (bli_cntx_lowprec_in_use(cntx) && bli_cntx_lowprec_elem_out(cntx)) y1 = (ctype*)((elem_t*)y + (j  )*ldy + (0  )*incy); \
 \
 			/* Invoke the kernel with the appropriate parameters. */ \
 			f( \
@@ -115,6 +116,7 @@ void PASTEMAC(ch,opname) \
 \
 				x1     = x + (ij0+j  )*ldx + (0  )*incx; \
 				y1     = y + (ij0+j  )*ldy + (0  )*incy; \
+				if (bli_cntx_lowprec_in_use(cntx) && bli_cntx_lowprec_elem_out(cntx)) y1 = (ctype*)((elem_t*)y + (ij0+j  )*ldy + (0  )*incy); \
 \
 				/* Invoke the kernel with the appropriate parameters. */ \
 				f( \
@@ -135,6 +137,7 @@ void PASTEMAC(ch,opname) \
 \
 				x1     = x + (j  )*ldx + (ij0+i  )*incx; \
 				y1     = y + (j  )*ldy + (ij0+i  )*incy; \
+				if (bli_cntx_lowprec_in_use(cntx) && bli_cntx_lowprec_elem_out(cntx)) y1 = (ctype*)((elem_t*)y + (j  )*ldy + (ij0+i  )*incy); \
 \
 				/* Invoke the kernel with the appropriate parameters. */ \
 				f( \

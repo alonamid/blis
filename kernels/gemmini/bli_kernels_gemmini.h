@@ -37,6 +37,7 @@ INVERTV_KER_PROT( float, s, invertv_lowprec)
 SETV_KER_PROT( float, s, setv_lowprec)
 SCALV_KER_PROT( float, s, scalv_lowprec)
 SCAL2V_KER_PROT( float, s, scal2v_lowprec)
+COPYV_KER_PROT( float, s, copyv_lowprec)
 
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_gemmini_32xk )

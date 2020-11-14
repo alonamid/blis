@@ -78,11 +78,12 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	// Update the context with optimized level-1v kernels.
 	bli_cntx_set_l1v_kers
 	(
-	  4,
+	  5,
           BLIS_INVERTV_KER,  BLIS_FLOAT, bli_sinvertv_lowprec,
           BLIS_SETV_KER,  BLIS_FLOAT, bli_ssetv_lowprec,
           BLIS_SCALV_KER,  BLIS_FLOAT, bli_sscalv_lowprec,
           BLIS_SCAL2V_KER,  BLIS_FLOAT, bli_sscal2v_lowprec,
+          BLIS_COPYV_KER,  BLIS_FLOAT, bli_scopyv_lowprec,
 	  //0,
 	  cntx
 	);
