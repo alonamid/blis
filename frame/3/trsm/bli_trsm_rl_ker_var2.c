@@ -297,7 +297,7 @@ void PASTEMAC(ch,varname) \
 		j        = -diagoffb; \
 		k        = k - j; \
 		diagoffb = 0; \
-		a_cast   = a_cast + ( j * PACKMR ) / off_scl; \
+		a_cast   = bli_cntx_lowprec_in_use(cntx)? (ctype*)((elem_t*)a_cast + ( j * PACKMR ) / off_scl) : a_cast + ( j * PACKMR ) / off_scl; \
 	} \
 \
 	/* If there is a zero region to the right of where the diagonal

@@ -278,7 +278,7 @@ void PASTEMAC(ch,varname) \
 		i        = diagoffa; \
 		k        = k - i; \
 		diagoffa = 0; \
-		b_cast   = b_cast + ( i * PACKNR ) / off_scl; \
+		b_cast   = bli_cntx_lowprec_in_use(cntx)? (ctype*)((elem_t*)b_cast + ( i * PACKNR ) / off_scl) : b_cast + ( i * PACKNR ) / off_scl; \
 	} \
 \
 	/* If there is a zero region below where the diagonal of A intersects the
