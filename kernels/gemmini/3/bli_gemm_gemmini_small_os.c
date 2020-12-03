@@ -166,7 +166,7 @@ void bli_sgemm_gemmini_small_os
         }
 
 
-        gemmini_extended_config_ex(OS, NO_ACTIVATION, 0, 0, 0, 1, true, false);
+        gemmini_extended_config_ex(OS, NO_ACTIVATION, 0, ACC_SCALE_IDENTITY, 0, 1, true, false);
         gemmini_config_st(C_row_stride * sizeof(elem_t));
 
         // Move-in D

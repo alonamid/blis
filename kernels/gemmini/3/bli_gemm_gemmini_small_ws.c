@@ -220,7 +220,7 @@ void bli_sgemm_gemmini_small_ws
         }
 
 
-        gemmini_extended_config_ex(WS, NO_ACTIVATION, 0, 0, 0, 1, true, false)
+        gemmini_extended_config_ex(WS, NO_ACTIVATION, 0, ACC_SCALE_IDENTITY, 0, 1, true, false)
         const size_t C_stride = elem_out ? C_row_stride * sizeof(elem_t) :  C_row_stride * sizeof(acc_t);
         gemmini_config_st(C_stride);
 
