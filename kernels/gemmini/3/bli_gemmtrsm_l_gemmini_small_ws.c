@@ -59,6 +59,8 @@ void bli_sgemmtrsm_l_gemmini_small_ws
 
         float* restrict minus_one = bli_sm1;
 /*
+	const dim_t        mr     = bli_cntx_get_blksz_def_dt( dt, BLIS_MR, cntx );
+	const dim_t        nr     = bli_cntx_get_blksz_def_dt( dt, BLIS_NR, cntx );
 	const inc_t        packmr = bli_cntx_get_blksz_max_dt( dt, BLIS_MR, cntx );
         printf("===GEMMTRSM Microkernel A10 panel====\n");
         for (int i=0; i<packmr; i++) {
@@ -120,7 +122,6 @@ void bli_sgemmtrsm_l_gemmini_small_ws
           cntx
         );
 	bli_cntx_set_lowprec_elem_out(cntx, 0);
-
 
         /* b11 = inv(a11) * b11;
            c11 = b11; */
