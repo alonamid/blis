@@ -617,7 +617,7 @@ void bli_spackm_gemmini_cxk
     float*  restrict pi1        = p;
     elem_t* restrict pi1_lp     = (elem_t*)p;
 
-    dim_t           mnr        = BLIS_MR;
+    dim_t           mnr        = bli_cntx_get_blksz_def_dt( BLIS_FLOAT, BLIS_MR, cntx );;
 
     if ( cdim == mnr ) //the "standard" case for packing, where a big matrix needs to be packed into panels
     {
