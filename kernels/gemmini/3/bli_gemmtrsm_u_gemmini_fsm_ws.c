@@ -4,7 +4,7 @@
    An object-based framework for developing high-performance BLAS-like
    libraries.
 
-   Copyright (C) 2019, The University of Texas at Austin
+   Copyright (C) 2014, The University of Texas at Austin
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -30,31 +30,61 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 */
 
-// -- l1 --
-INVERTV_KER_PROT( float, s, invertv_lowprec)
-SETV_KER_PROT( float, s, setv_lowprec)
-SCALV_KER_PROT( float, s, scalv_lowprec)
-SCAL2V_KER_PROT( float, s, scal2v_lowprec)
-COPYV_KER_PROT( float, s, copyv_lowprec)
+#include "blis.h"
 
-// -- packing --
-PACKM_KER_PROT( float,   s, packm_gemmini_32xk )
-PACKM_KER_PROT( float,   s, packm_gemmini_4xk )
-PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
+void bli_sgemmtrsm_u_gemmini_fsm_ws
+     (
+       dim_t               k,
+       float*    restrict alpha,
+       float*    restrict a12,
+       float*    restrict a11,
+       float*    restrict b21,
+       float*    restrict b11,
+       float*    restrict c11, inc_t rs_c, inc_t cs_c,
+       auxinfo_t* restrict data,
+       cntx_t*    restrict cntx
+     )
+{
 
-// -- level-3 --
+	const num_t        dt     = BLIS_FLOAT;
 
-// gemm (asm d12x6)
-TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
-TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
-GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
-GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
-GEMM_UKR_PROT( float,   s, gemm_gemmini_fsm_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_fsm_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_fsm_ws )
+	const inc_t        packnr = bli_cntx_get_blksz_max_dt( dt, BLIS_NR, cntx );
+
+	const inc_t        rs_b   = packnr;
+        const inc_t        cs_b   = 1;
+
+
+        float* restrict minus_one = bli_sm1;
+
+
+        /* b11 = alpha * b11 - a12 * b21; */
+
+	bli_cntx_set_lowprec_elem_out(cntx, 1);
+        bli_sgemm_gemmini_fsm_ws
+        (
+          k,
+          minus_one,
+          a12,
+          b21,
+          alpha,
+          b11, rs_b, cs_b,
+          data,
+          cntx
+        );
+	bli_cntx_set_lowprec_elem_out(cntx, 0);
+
+        /* b11 = inv(a11) * b11;
+           c11 = b11; */
+        bli_strsm_u_gemmini_small
+        (
+          a11,
+          b11,
+          c11, rs_c, cs_c,
+          data,
+          cntx
+        );
+
+}
