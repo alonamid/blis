@@ -34,16 +34,6 @@
 
 #include "blis.h"
 
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_scopysconvert( a, b ) \
-{ \
-    float_cast tmp = { (a) }; \
-    (b) = (elem_t)(tmp.bits >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1))); \
-}
-#else
-#define bli_scopysconvert( a, b )  bli_scopys(a, b)
-#endif
-
 void bli_scopyv_lowprec
      (
        conj_t           conjx,
@@ -65,14 +55,14 @@ void bli_scopyv_lowprec
 			{
 				for ( dim_t i = 0; i < n; ++i )
 				{
-					bli_scopysconvert( x[i], y_elem[i] );
+					bli_tolowprec( x[i], y_elem[i] );
 				}
 			}
 			else
 			{
 				for ( dim_t i = 0; i < n; ++i )
 				{
-					bli_scopysconvert( *x, *y_elem );
+					bli_tolowprec( *x, *y_elem );
 
 					x += incx;
 					y_elem += incy;
@@ -85,14 +75,14 @@ void bli_scopyv_lowprec
 			{
 				for ( dim_t i = 0; i < n; ++i )
 				{
-					bli_scopysconvert( x[i], y_elem[i] );
+					bli_tolowprec( x[i], y_elem[i] );
 				}
 			}
 			else
 			{
 				for ( dim_t i = 0; i < n; ++i )
 				{
-					bli_scopysconvert( *x, *y_elem );
+					bli_tolowprec( *x, *y_elem );
 
 					x += incx;
 					y_elem += incy;

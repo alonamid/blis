@@ -35,53 +35,8 @@
 #include "blis.h"
 #include "include/gemmini_params.h"
 
-//=========BF16 Conversion Helper Macros==========
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_scopysconvert( a, b ) \
-{ \
-    float_cast tmp = { (a) }; \
-    (b) = (elem_t)(tmp.bits >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1))); \
-}
-#else
-#define bli_scopysconvert( a, b )  bli_scopys(a, b)
-#endif
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_sscal2sconvert(x, a, b ) \
-{ \
-    float_cast tmp = { (x) * (a) }; \
-    (b) = (elem_t)(tmp.bits >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1))); \
-}
-#else
-#define bli_sscal2sconvert(x, a, b )  bli_sscal2s(x, a, b)
-#endif
-
-//=========FP16 or other 16-bit FP format Conversion Helper Macros==========
-/*
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_scopysconvert( a, b ) \
-{ \
-        float_cast src_bits = { (a) }; \
-	(b) = packToF16UI( src_bits.parts.sign, src_bits.parts.exponenti >> (FP32_EXP_BITS - ELEM_T_EXP_BITS), src_bits.parts.mantisa >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)) ); \
-}
-#else
-#define bli_scopysconvert( a, b )  bli_scopys(a, b)
-#endif
-
-
-#ifdef ELEM_T_IS_LOWPREC_FLOAT
-#define bli_sscal2sconvert(x, a, b ) \
-{ \
-        float_cast src_bits = { (x) * (a) }; \
-	(b) = packToF16UI( src_bits.parts.sign, src_bits.parts.exponent >> (FP32_EXP_BITS - ELEM_T_EXP_BITS), src_bits.parts.mantisa >> (FP32_SIG_BITS - (ELEM_T_SIG_BITS - 1)) ); \
-}
-#else
-#define bli_sscal2sconvert(x, a, b )  bli_sscal2s(x, a, b)
-#endif
-*/
-
-
+#define bli_scopysconvert( a, b ) bli_tolowprec( (a), (b) )
+#define bli_sscal2sconvert(x, a, b ) bli_tolowprec( (x) * (a), (b) )
 
 //unrolled 32
 void bli_spackm_gemmini_32xk
