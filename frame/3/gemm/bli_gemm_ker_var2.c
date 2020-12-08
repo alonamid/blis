@@ -392,6 +392,7 @@ void PASTEMAC(ch,varname) \
 				  &aux, \
 				  cntx  \
 				); \
+				__asm__ volatile("fence"); \
 \
 				/* Scale the bottom edge of C and add the result from above. */ \
 				PASTEMAC(ch,xpbys_mxn)( m_cur, n_cur, \

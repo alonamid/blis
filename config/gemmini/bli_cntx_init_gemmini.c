@@ -35,6 +35,7 @@
 
 #include "blis.h"
 #include "include/gemmini_params.h"
+#include <sys/mman.h>
 //need to make sure that all variable declarations in gemmini_params.h
 //are static const, otherwise there will be linker issues
 
@@ -42,6 +43,11 @@
 void bli_cntx_init_gemmini( cntx_t* cntx )
 {
 	blksz_t blkszs[ BLIS_NUM_BLKSZS ];
+
+        if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
+          perror("mlockall failed");
+          exit(1);
+        }
 
 	// Set default kernel blocksizes and functions.
 	bli_cntx_init_gemmini_ref( cntx );
@@ -56,15 +62,18 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	  5,
 	  // gemm
 	  //BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_os,            TRUE,
-	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_ws,            TRUE,
-          //trsm
-          BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_gemmini_small,             TRUE,
-          BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_gemmini_small,             TRUE,
-          //gemmtrsm
-          //BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_os,      TRUE,
-          //BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_os,      TRUE,
-          BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_ws,      TRUE,
-          BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_ws,      TRUE,
+	  //BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_small_ws,            TRUE,
+	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_fsm_ws,            TRUE,
+	  //trsm
+	  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_gemmini_small,             TRUE,
+	  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_gemmini_small,             TRUE,
+	  //gemmtrsm
+	  //BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_os,      TRUE,
+	  //BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_os,      TRUE,
+	  //BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_small_ws,      TRUE,
+	  //BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_small_ws,      TRUE,
+	  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_fsm_ws,      TRUE,
+	  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_fsm_ws,      TRUE,
 	  cntx
 	);
 
@@ -88,23 +97,34 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	  cntx
 	);
 
+
+//single buffering
+/*
 #define partition_rows (BANK_NUM * BANK_ROWS / 2)
 #define mats_in_partition (partition_rows / DIM)
 #define mats_in_acc (ACC_ROWS / DIM)
 #define max_tile_i_j ((size_t)sqrt(mats_in_acc))
 #define max_tile_k (mats_in_partition / max_tile_i_j)
+*/
+//double buffering use half the memory resources
+#define partition_rows ((BANK_NUM * BANK_ROWS / 2) / 2)
+#define mats_in_partition (partition_rows / DIM)
+#define mats_in_acc ((ACC_ROWS / 2) / DIM)
+#define max_tile_i_j (((size_t)sqrt(mats_in_acc))*DIM)
+#define max_tile_k ((mats_in_partition / max_tile_i_j)*DIM)
+
+//L2 parameters
 #define L2_SIZE 512*1024
 #define l2_elem_capacity (L2_SIZE / sizeof(elem_t))
-#define max_tile_l2 (l2_elem_capacity / max_tile_k)
+#define max_tile_l2 (l2_elem_capacity * max_tile_i_j / mats_in_partition)
 
 	// Update the context with optimized packm kernels.
         bli_cntx_set_packm_kers
         (
-          2,
+          3,
           BLIS_PACKM_4XK_KER,   BLIS_FLOAT, bli_spackm_gemmini_4xk,
           BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
-          //max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
-          //max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
+          max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
           cntx
         );
 

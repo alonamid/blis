@@ -63,7 +63,6 @@ void bli_sgemm_gemmini_fsm_ws
 
 	const bool_t       elem_out = bli_cntx_lowprec_elem_out(cntx);
 
-
        if (k0 == 0) 
        {
   
@@ -165,8 +164,8 @@ void bli_sgemm_gemmini_fsm_ws
 #define partition_rows ((BANK_NUM * BANK_ROWS / 2) / 2)
 #define mats_in_partition (partition_rows / DIM)
 #define mats_in_acc ((ACC_ROWS / 2) / DIM)
-#define max_tile_i_j ((size_t)sqrt(mats_in_acc))
-#define max_tile_k (mats_in_partition / max_tile_i_j)
+#define max_tile_i_j (((size_t)sqrt(mats_in_acc))*DIM)
+#define max_tile_k ((mats_in_partition / max_tile_i_j)*DIM)
 
 
         const size_t dim_K_padded = (k0 / DIM + (k0 % DIM != 0)) * DIM;
@@ -197,10 +196,8 @@ void bli_sgemm_gemmini_fsm_ws
         elem_t * B = (elem_t*)b;
         acc_t * D = c;
         acc_t * C = c;
-        //const size_t I = mr / DIM;
         const size_t I = dim_I_padded % (tile_I*DIM) == 0 ? tile_I : (dim_I_padded/DIM) % tile_I;
         const size_t pad_I = padding_I;
-        //const size_t J = nr / DIM;
         const size_t J = dim_J_padded % (tile_J*DIM) == 0 ? tile_J : (dim_J_padded/DIM) % tile_J;
         const size_t pad_J = padding_J;
 
@@ -208,7 +205,7 @@ void bli_sgemm_gemmini_fsm_ws
 
         //If C is column-major, we will need to tranpose it
         static acc_t D_transpose[mats_in_acc*DIM*DIM] __attribute__ ((aligned (64)));
-        static acc_t C_transpose[mats_in_acc*DIM*DIM] __attribute__ ((aligned (64)));
+        acc_t* C_transpose = D_transpose;
         bool C_column_major = false;
         if (C_row_stride == 1 && C_col_stride != 1) {
            C_column_major = true;
@@ -217,9 +214,8 @@ void bli_sgemm_gemmini_fsm_ws
         }
 
         const size_t C_stride = elem_out ? C_row_stride * sizeof(elem_t) :  C_row_stride * sizeof(acc_t);
+        const size_t D_stride = C_stride;
         acc_t * const C_dram_addr = C_column_major ? (acc_t*)(C_transpose) : C;
-
-        const size_t D_stride = elem_out ? D_row_stride * sizeof(elem_t) :  D_row_stride * sizeof(acc_t);
         const acc_t * D_dram_addr = D;
 
         //mini transpose if column-major
@@ -271,17 +267,17 @@ void bli_sgemm_gemmini_fsm_ws
 
         }
 
-        // configure gemmini
-        // TODO: define "gemmini_start" in the blis context, so we can configure only once to enable double buffering
-        // set gemmini_start to 1 within the same function that gets called to set lowprec to 1 at the beginning of every BLAS3 functions
-        //if (bli_cntx_gemmini_start(cntx);) {
+        // configure gemmini only once to enable double buffering
+        if (bli_cntx_lowprec_start(cntx) || D_stride != bli_auxinfo_lowprec_prev_stride(data) || D_scale_factor != bli_auxinfo_lowprec_prev_scale(data)) {
           gemmini_extended_config_ex(WS, NO_ACTIVATION, 0, ACC_SCALE_IDENTITY, 0, 1, true, false)
           gemmini_config_st(C_stride);
           gemmini_extended3_config_ld(A_row_stride * sizeof(elem_t), A_scale_factor, elem_out, 0);
           gemmini_extended3_config_ld(B_row_stride * sizeof(elem_t), B_scale_factor, elem_out, 1);
           gemmini_extended3_config_ld(D_stride, D_scale_factor, elem_out, 2);
-          //bli_cntx_set_gemmini_start(cntx, 0);
-        //}
+          bli_cntx_set_lowprec_start(cntx, 0);
+          bli_auxinfo_set_lowprec_prev_stride(data, D_stride);
+          bli_auxinfo_set_lowprec_prev_scale(data, D_scale_factor);
+        }
 
         // tile based on the scratchpad size
         for (size_t K0 = 0; K0 < K_num_tiles*tile_K; K0 += tile_K)
@@ -291,15 +287,7 @@ void bli_sgemm_gemmini_fsm_ws
           const elem_t * const A_dram_addr = A + (K0*DIM*A_row_stride);
           const size_t K = last_tile ? last_K : tile_K;
           const size_t pad_K = last_tile ? padding_K : 0;
-/*
-          printf("tile_K %d, dim_K_padded %d, last_K %d\n", tile_K, dim_K_padded, last_K);
-          printf("tile_I %d, dim_I_padded %d\n", tile_I, dim_I_padded);
-          printf("tile_J %d, dim_J_padded %d\n", tile_J, dim_J_padded);
-          printf("I %d, J %d, K %d, pad_I %d, pad_J %d, pad_K %d, K0 %d\n", I, J, K, pad_I, pad_J, pad_K, K0);
-          printf("A_row_stride %d, B_row_stride %d\n", A_row_stride, B_row_stride); 
-          printf("C_row_stride %d, D_row_stride %d\n", C_row_stride, D_row_stride); 
-          printf("D_stride %d, C_stride %d, C_col_stride %d\n", D_stride, C_stride, C_col_stride); 
-*/
+
           // Call gemmini matmul FSM
           gemmini_loop_ws(I, J, K, pad_I, pad_J, pad_K, 
                           A_dram_addr, B_dram_addr, 
@@ -307,9 +295,12 @@ void bli_sgemm_gemmini_fsm_ws
                           last_tile ? C_dram_addr : NULL,
                           A_row_stride, B_row_stride, D_row_stride, C_row_stride,
                           true, false,
-                          !elem_out, !(K0 == 0) || !no_bias);
+                          !elem_out, elem_out, !(K0 == 0) || !no_bias);
 
         }
+
+        //fence if this is a gemmtrsm kernel (elem_out)
+        if (elem_out) gemmini_fence();
 
         //mini transpose if column-major
         if (C_column_major) {

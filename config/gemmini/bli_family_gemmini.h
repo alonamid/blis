@@ -34,8 +34,10 @@
 
 //#ifndef BLIS_FAMILY_H
 //#define BLIS_FAMILY_H
+#include "include/gemmini_params.h"
 
 
+#define BLIS_STACK_BUF_MAX_SIZE  ( ACC_ROWS * MAX_BYTES * 2 )
 
 
 //#endif

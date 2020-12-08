@@ -734,6 +734,8 @@ static void bli_cntx_set_unpackm_ker_dt( void_fp fp, num_t dt, l1mkr_t ker_id, c
 static void bli_cntx_set_lowprec_in_use(cntx_t* cntx, bool_t val)
 {
 	cntx->lowprec_in_use = val;
+	if (val) cntx->lowprec_start = 1;
+	if (!val)  __asm__ volatile("fence");
 }
 
 static bool_t bli_cntx_lowprec_in_use(cntx_t* cntx)
@@ -750,6 +752,17 @@ static bool_t bli_cntx_lowprec_elem_out(cntx_t* cntx)
 {
 	return cntx->lowprec_elem_out;
 }
+
+static void bli_cntx_set_lowprec_start(cntx_t* cntx, bool_t val)
+{
+	cntx->lowprec_start = val;
+}
+
+static bool_t bli_cntx_lowprec_start(cntx_t* cntx)
+{
+	return cntx->lowprec_start;
+}
+
 // -----------------------------------------------------------------------------
 
 // Function prototypes

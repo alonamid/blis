@@ -397,6 +397,7 @@ void PASTEMAC(ch,varname) \
 				  &aux, \
 				  cntx  \
 				); \
+				__asm__ volatile("fence"); \
 \
 				/* Scale C and add the result to only the stored part. */ \
 				PASTEMAC(ch,xpbys_mxn_u)( diagoffc_ij, \
@@ -437,6 +438,7 @@ void PASTEMAC(ch,varname) \
 					  &aux, \
 					  cntx  \
 					); \
+					__asm__ volatile("fence"); \
 \
 					/* Scale the edge of C and add the result. */ \
 					PASTEMAC(ch,xpbys_mxn)( m_cur, n_cur, \
@@ -545,6 +547,7 @@ void PASTEMAC(ch,varname) \
 					  &aux, \
 					  cntx  \
 					); \
+					__asm__ volatile("fence"); \
 \
 					/* Scale the edge of C and add the result. */ \
 					PASTEMAC(ch,xpbys_mxn)( m_cur, n_cur, \

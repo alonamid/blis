@@ -132,5 +132,29 @@ static void bli_auxinfo_set_dt_on_output( num_t dt_on_output, auxinfo_t* ai )
 }
 #endif
 
+
+// 16-bit low precision packing indicators
+
+static size_t bli_auxinfo_lowprec_prev_stride(auxinfo_t* ai)
+{
+        return ai->lowprec_prev_stride;
+}
+
+static void bli_auxinfo_set_lowprec_prev_stride(auxinfo_t* ai, size_t val)
+{
+        ai->lowprec_prev_stride = val;
+}
+
+
+static float bli_auxinfo_lowprec_prev_scale(auxinfo_t* ai)
+{
+        return ai->lowprec_prev_scale;
+}
+
+static void bli_auxinfo_set_lowprec_prev_scale(auxinfo_t* ai, float val)
+{
+        ai->lowprec_prev_scale = val;
+}
+
 #endif 
 

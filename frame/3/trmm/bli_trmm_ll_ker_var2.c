@@ -448,6 +448,7 @@ void PASTEMAC(ch,varname) \
 					  &aux, \
 					  cntx  \
 					); \
+					__asm__ volatile("fence"); \
 \
 					/* Copy the result to the edge of C. */ \
 					PASTEMAC(ch,copys_mxn)( m_cur, n_cur, \
@@ -514,6 +515,7 @@ void PASTEMAC(ch,varname) \
 					  &aux, \
 					  cntx  \
 					); \
+					__asm__ volatile("fence"); \
 \
 					/* Add the result to the edge of C. */ \
 					PASTEMAC(ch,adds_mxn)( m_cur, n_cur, \
