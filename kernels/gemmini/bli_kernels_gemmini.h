@@ -40,6 +40,7 @@ SCAL2V_KER_PROT( float, s, scal2v_lowprec)
 COPYV_KER_PROT( float, s, copyv_lowprec)
 
 // -- packing --
+PACKM_KER_PROT( float,   s, packm_gemmini_88xk )
 PACKM_KER_PROT( float,   s, packm_gemmini_32xk )
 PACKM_KER_PROT( float,   s, packm_gemmini_4xk )
 PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
