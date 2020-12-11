@@ -164,8 +164,8 @@ void bli_sgemm_gemmini_fsm_ws
 #define partition_rows ((BANK_NUM * BANK_ROWS / 2) / 2)
 #define mats_in_partition (partition_rows / DIM)
 #define mats_in_acc ((ACC_ROWS / 2) / DIM)
-#define max_tile_i_j (((size_t)sqrt(mats_in_acc))*DIM)
-#define max_tile_k ((mats_in_partition / max_tile_i_j)*DIM)
+#define max_tile_i_j ((size_t)sqrt(mats_in_acc))
+#define max_tile_k (mats_in_partition / max_tile_i_j)
 
 
         const size_t dim_K_padded = (k0 / DIM + (k0 % DIM != 0)) * DIM;

@@ -110,8 +110,8 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 #define partition_rows ((BANK_NUM * BANK_ROWS / 2) / 2)
 #define mats_in_partition (partition_rows / DIM)
 #define mats_in_acc ((ACC_ROWS / 2) / DIM)
-#define max_tile_i_j (((size_t)sqrt(mats_in_acc))*DIM)
-#define max_tile_k ((mats_in_partition / max_tile_i_j)*DIM)
+#define max_tile_i_j ((size_t)sqrt(mats_in_acc))
+#define max_tile_k (mats_in_partition / max_tile_i_j)
 
 //L2 parameters
 #define L2_SIZE 512*1024
@@ -124,7 +124,8 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
           3,
           BLIS_PACKM_4XK_KER,   BLIS_FLOAT, bli_spackm_gemmini_4xk,
           BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
-          max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
+          //BLIS_PACKM_88XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_88xk,
+          DIM*max_tile_i_j,  BLIS_FLOAT, bli_spackm_gemmini_cxk,
           cntx
         );
 
@@ -135,16 +136,16 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
         // WS
-	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         max_tile_i_j,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM*max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM*max_tile_i_j,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
 
         //cache blocking (scratchpad size)
         //TODO (Alon): Consider blocking based on L2 size rather than scratchpad size?
-	bli_blksz_init_easy( &blkszs[ BLIS_MC ],max_tile_i_j,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_KC ],  max_tile_k,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NC ],max_tile_l2,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_MC ],DIM*max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_KC ],4*DIM*max_tile_k,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NC ],4*max_tile_l2,     0,     0,     0 );
 
 	// level-1f
 	//bli_blksz_init_easy( &blkszs[ BLIS_AF ],         0,     0,     0,     0 );
