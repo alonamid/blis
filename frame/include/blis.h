@@ -37,10 +37,33 @@
 #ifndef BLIS_H
 #define BLIS_H
 
+// Allow C++ users to include this header file in their source code. However,
+// we make the extern "C" conditional on whether we're using a C++ compiler,
+// since regular C compilers don't understand the extern "C" construct.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// NOTE: PLEASE DON'T CHANGE THE ORDER IN WHICH HEADERS ARE INCLUDED UNLESS
+// YOU ARE SURE THAT IT DOESN'T BREAK INTER-HEADER MACRO DEPENDENCIES.
+
+// -- System headers --
+// NOTE: This header must be included before bli_config_macro_defs.h.
+
+#include "bli_system.h"
+
+
+// -- configure definitions --
+
+#include "bli_config.h"
+#include "bli_config_macro_defs.h"
+
 
 // -- Gemmini Low-Precision Helper Utils --
 
+#ifdef BLIS_CONFIG_GEMMINI
 #include "include/gemmini_params.h"
+
 /*
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
 #define elemtype(ctype, ch)  elemtype_ ## ch (ctype)
@@ -128,28 +151,9 @@ typedef union {
 #endif
 */
 
-
-
-// Allow C++ users to include this header file in their source code. However,
-// we make the extern "C" conditional on whether we're using a C++ compiler,
-// since regular C compilers don't understand the extern "C" construct.
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// NOTE: PLEASE DON'T CHANGE THE ORDER IN WHICH HEADERS ARE INCLUDED UNLESS
-// YOU ARE SURE THAT IT DOESN'T BREAK INTER-HEADER MACRO DEPENDENCIES.
-
-// -- System headers --
-// NOTE: This header must be included before bli_config_macro_defs.h.
-
-#include "bli_system.h"
-
-
-// -- configure definitions --
-
-#include "bli_config.h"
-#include "bli_config_macro_defs.h"
+#else // BLIS_CONFIG_GEMMINI
+typedef float elem_t;
+#endif // BLIS_CONFIG_GEMMINI
 
 
 // -- Common BLIS definitions --

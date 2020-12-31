@@ -33,7 +33,6 @@
 */
 
 #include "blis.h"
-#include "include/gemmini_params.h"
 
 #define bli_scopysconvert( a, b ) bli_tolowprec( (a), (b) )
 #define bli_sscal2sconvert(x, a, b ) bli_tolowprec( (x) * (a), (b) )

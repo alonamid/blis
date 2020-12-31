@@ -33,7 +33,6 @@
 */
 
 #include "blis.h"
-#include "include/gemmini_params.h"
 
 void bli_sinvertv_lowprec
      ( 
