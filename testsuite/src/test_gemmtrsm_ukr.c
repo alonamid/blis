@@ -463,8 +463,8 @@ bli_printm( "ap", &ap, "%5.2f", "" );
 			}
 		}
 		bli_obj_set_uplo( uploa, &a11p );
-		bli_obj_free( &ap_check );
-		bli_obj_free( &bp_check );
+		//bli_obj_free( &ap_check );
+		//bli_obj_free( &bp_check );
 	}
 #endif
 	libblis_test_gemmtrsm_ukr_check( params, side, &alpha,
