@@ -33,14 +33,22 @@
 
 */
 
-#include "blis.h"
+#ifdef BLIS_CONFIGURETIME_CPUID
+  #define BLIS_INLINE static
+  #define BLIS_EXPORT_BLIS
+  #include "bli_system.h"
+  #include "bli_type_defs.h"
+  #include "bli_env.h"
+#else
+  #include "blis.h"
+#endif
 
 // -----------------------------------------------------------------------------
 
-dim_t bli_env_get_var( const char* env, dim_t fallback )
+gint_t bli_env_get_var( const char* env, gint_t fallback )
 {
-	dim_t r_val;
-	char* str;
+	gint_t r_val;
+	char*  str;
 
 	// Query the environment variable and store the result in str.
 	str = getenv( env );
@@ -50,7 +58,7 @@ dim_t bli_env_get_var( const char* env, dim_t fallback )
 	{
 		// If there was no error, convert the string to an integer and
 		// prepare to return that integer.
-		r_val = strtol( str, NULL, 10 );
+		r_val = ( gint_t )strtol( str, NULL, 10 );
 	}
 	else
 	{

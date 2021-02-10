@@ -45,9 +45,9 @@ void bli_spackm_gemmini_32xk
        dim_t            cdim,
        dim_t            n,
        dim_t            n_max,
-       void*   restrict kappa,
-       void*   restrict a, inc_t inca, inc_t lda,
-       void*   restrict p,             inc_t ldp,
+       float*   restrict kappa,
+       float*   restrict a, inc_t inca, inc_t lda,
+       float*   restrict p,             inc_t ldp,
        cntx_t* restrict cntx
      )
 {
@@ -371,9 +371,9 @@ void bli_spackm_gemmini_4xk
        dim_t            cdim,
        dim_t            n,
        dim_t            n_max,
-       void*   restrict kappa,
-       void*   restrict a, inc_t inca, inc_t lda,
-       void*   restrict p,             inc_t ldp,
+       float*   restrict kappa,
+       float*   restrict a, inc_t inca, inc_t lda,
+       float*   restrict p,             inc_t ldp,
        cntx_t* restrict cntx
      )
 {
@@ -559,9 +559,9 @@ void bli_spackm_gemmini_cxk
        dim_t            cdim,
        dim_t            n,
        dim_t            n_max,
-       void*   restrict kappa,
-       void*   restrict a, inc_t inca, inc_t lda,
-       void*   restrict p,             inc_t ldp,
+       float*   restrict kappa,
+       float*   restrict a, inc_t inca, inc_t lda,
+       float*   restrict p,             inc_t ldp,
        cntx_t* restrict cntx
      )
 {
@@ -745,9 +745,9 @@ void bli_spackm_gemmini_88xk
        dim_t            cdim,
        dim_t            n,
        dim_t            n_max,
-       void*   restrict kappa,
-       void*   restrict a, inc_t inca, inc_t lda,
-       void*   restrict p,             inc_t ldp,
+       float*   restrict kappa,
+       float*   restrict a, inc_t inca, inc_t lda,
+       float*   restrict p,             inc_t ldp,
        cntx_t* restrict cntx
      )
 {
