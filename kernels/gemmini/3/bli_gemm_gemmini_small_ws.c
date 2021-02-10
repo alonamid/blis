@@ -61,7 +61,7 @@ void bli_sgemm_gemmini_small_ws
 	const inc_t        cs_a   = packmr;
 	const inc_t        rs_b   = packnr;
 
-	const bool_t       elem_out = bli_cntx_lowprec_elem_out(cntx);
+	const bool       elem_out = bli_cntx_lowprec_elem_out(cntx);
 
 
        if (k0 == 0) 
