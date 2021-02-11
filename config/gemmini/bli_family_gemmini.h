@@ -36,6 +36,8 @@
 //#define BLIS_FAMILY_H
 #include "include/gemmini_params.h"
 
+#define BLIS_ENABLE_SMALL_MATRIX_TRSM
+#define BLIS_SMALL_MATRIX_THRES_TRSM DIM*DIM
 
 #define BLIS_STACK_BUF_MAX_SIZE  ( ACC_ROWS * MAX_BYTES * 2 )
 

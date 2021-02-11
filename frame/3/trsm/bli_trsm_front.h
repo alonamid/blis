@@ -44,7 +44,7 @@ void bli_trsm_front
        cntl_t* cntl
      );
 
-#ifdef BLIS_ENABLE_SMALL_MATRIX
+#ifdef BLIS_ENABLE_SMALL_MATRIX_TRSM
 err_t bli_trsm_small
      (
        side_t  side,

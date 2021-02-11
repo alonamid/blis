@@ -623,7 +623,7 @@ static err_t bli_dtrsm_small_AlXB(
     
       for (k = 0; k < M; k++)
       {
-        double lkk_inv = 1.0/A[k+k*lda];
+        double lkk_inv = 1.0/A[k*lda+k];
         for (j = 0; j < N; j++)
         {
             B[k*ldb + j] *= lkk_inv;
@@ -1311,10 +1311,10 @@ static err_t bli_strsm_small_AlXB(
       for(j = 0 ; j < N; j++)
           for(i = 0; i < M; i++)
               B[i*ldb+j] *= alpha;
-    
+
       for (k = 0; k < M; k++)
       {
-        float lkk_inv = 1.0/A[k+k*lda];
+        float lkk_inv = 1.0/A[k*lda+k];
         for (j = 0; j < N; j++)
         {
             B[k*ldb + j] *= lkk_inv;
