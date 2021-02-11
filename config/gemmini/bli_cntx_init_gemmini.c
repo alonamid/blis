@@ -43,6 +43,7 @@
 void bli_cntx_init_gemmini( cntx_t* cntx )
 {
 	blksz_t blkszs[ BLIS_NUM_BLKSZS ];
+        blksz_t thresh[ BLIS_NUM_THRESH ];
 
         if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
           perror("mlockall failed");
@@ -151,12 +152,6 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	//bli_blksz_init_easy( &blkszs[ BLIS_AF ],         0,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_DF ],         0,     0,     0,     0 );
 
-#undef partition_rows
-#undef mats_in_partition
-#undef mats_in_acc
-#undef max_tile_i_j
-#undef max_tile_k
-
 	// Update the context with the current architecture's register and cache
 	// blocksizes (and multiples) for native execution.
 	bli_cntx_set_blkszs
@@ -175,5 +170,68 @@ void bli_cntx_init_gemmini( cntx_t* cntx )
 	  //BLIS_DF, &blkszs[ BLIS_DF ], BLIS_DF,
 	  cntx
 	);
+
+
+	// small matrix:
+
+	// Initialize sup thresholds with architecture-appropriate values.
+	//                                           s      d      c      z
+	bli_blksz_init_easy( &thresh[ BLIS_MT ],   2*DIM*DIM,   -1,    -1,    -1 );
+	bli_blksz_init_easy( &thresh[ BLIS_NT ],   2*DIM*DIM,   -1,    -1,    -1 );
+	bli_blksz_init_easy( &thresh[ BLIS_KT ],   10,  -1,    -1,    -1 );
+	//bli_blksz_init_easy( &thresh[ BLIS_KT ],   DIM*max_tile_i_j / 2,   220,    -1,    -1 );
+	//bli_blksz_init_easy( &thresh[ BLIS_MT ],   20,   256,    -1,    -1 );
+	//bli_blksz_init_easy( &thresh[ BLIS_NT ],   20,   256,    -1,    -1 );
+	//bli_blksz_init_easy( &thresh[ BLIS_KT ],   20,   220,    -1,    -1 );
+
+	// Initialize the context with the sup thresholds.
+	bli_cntx_set_l3_sup_thresh
+	(
+	  3,
+	  BLIS_MT, &thresh[ BLIS_MT ],
+	  BLIS_NT, &thresh[ BLIS_NT ],
+	  BLIS_KT, &thresh[ BLIS_KT ],
+	  cntx
+	);
+
+	// Initialize the context with the sup handlers.
+	bli_cntx_set_l3_sup_handlers
+	(
+	  1,
+	  BLIS_GEMM, bli_gemmsup_ref,
+	  //BLIS_GEMMT, bli_gemmtsup_ref,
+	  cntx
+	);
+
+
+	// Initialize level-3 sup blocksize objects with architecture-specific
+	// values.
+	//                                           s      d      c      z
+	bli_blksz_init     ( &blkszs[ BLIS_MR ],     6,     6,    -1,    -1,
+	                                             9,     9,    -1,    -1 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NR ],    16,     8,    -1,    -1 );
+	bli_blksz_init_easy( &blkszs[ BLIS_MC ],   144,    72,    -1,    -1 );
+	bli_blksz_init_easy( &blkszs[ BLIS_KC ],   256,   256,    -1,    -1 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NC ],  8160,  4080,    -1,    -1 );
+
+
+	// Update the context with the current architecture's register and cache
+	// blocksizes for small/unpacked level-3 problems.
+	bli_cntx_set_l3_sup_blkszs
+	(
+	  5,
+	  BLIS_NC, &blkszs[ BLIS_NC ],
+	  BLIS_KC, &blkszs[ BLIS_KC ],
+	  BLIS_MC, &blkszs[ BLIS_MC ],
+	  BLIS_NR, &blkszs[ BLIS_NR ],
+	  BLIS_MR, &blkszs[ BLIS_MR ],
+	  cntx
+	);
+#undef partition_rows
+#undef mats_in_partition
+#undef mats_in_acc
+#undef max_tile_i_j
+#undef max_tile_k
+
 }
 
