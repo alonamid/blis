@@ -167,11 +167,11 @@ void bli_sgemm_hwacha_16x16
 */
 
           //TODO: this should be in the blis context initialization
-          __asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, BLIS_MR+2, 0, 1)));
+          __asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, mr+2, 0, 1)));
       
           int vlen_result;
-          __asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (BLIS_NR));
-          if (vlen_result < BLIS_NR)
+          __asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (nr));
+          if (vlen_result < nr)
           {
             printf("ERROR: vlen=%d is smaller than NR=%ld\n", vlen_result, nr);
             exit(-1);
@@ -285,7 +285,7 @@ void bli_sgemm_hwacha_16x16
             vf(&bli_sgemm_hwacha_16xn_vf_inner_1);
 
             b_ptr += rs_b;
-            a_ptr += 2 * BLIS_MR;
+            a_ptr += 2 * mr;
 
           }
 
