@@ -63,7 +63,7 @@ extern void bli_sgemm_hwacha_16xn_vf_inner_1(void);
 extern void bli_sgemm_hwacha_16xn_vf_end(void);
 
 #define vf(p) \
-	__asm__ __volatile__ ("vf %0" : : "A" (p))
+        __asm__ __volatile__ ("vf (%0)" : : "r" (p))
 
 /* The Hwacha vector register file can hold 4096 FP32 elements.
  * Splitting the register file between A, B, and C give 1024 elements each
@@ -198,19 +198,19 @@ void bli_sgemm_hwacha_16x16
           __asm__ volatile ("vmca va14, %0" : : "r" (c+14*rs_c0));
           __asm__ volatile ("vmca va15, %0" : : "r" (c+15*rs_c0));
 
-         // load C
-	 if (*beta) {
-                // load beta
-                __asm__ volatile ("vmcs vs63,  %0" : : "r" (*beta));
-		vf(bli_sgemm_hwacha_16xn_vf_init_beta);
-	 } else {
-		vf(bli_sgemm_hwacha_16xn_vf_init);
-	 }
-    
          //B row address
          __asm__ volatile ("vmca va16, %0 \n\t" : : "r" (b_ptr));
          b_ptr += rs_b;
 
+         // load C and first B
+	 if (*beta) {
+                // load beta
+                __asm__ volatile ("vmcs vs63,  %0" : : "r" (*beta));
+		vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
+	 } else {
+		vf(&bli_sgemm_hwacha_16xn_vf_init);
+	 }
+    
 
          // load alpha
           __asm__ volatile ("vmcs vs63,  %0" : : "r" (*alpha));
@@ -248,7 +248,7 @@ void bli_sgemm_hwacha_16x16
             // B row
             __asm__ volatile ("vmca va16, %0 \n\t" : : "r" (b_ptr));
 
-            vf(bli_sgemm_hwacha_16xn_vf_inner_0);
+            vf(&bli_sgemm_hwacha_16xn_vf_inner_0);
 
             b_ptr += rs_b;
 
@@ -282,7 +282,7 @@ void bli_sgemm_hwacha_16x16
             // B row
             __asm__ volatile ("vmca va16, %0 \n\t" : : "r" (b_ptr));
 
-            vf(bli_sgemm_hwacha_16xn_vf_inner_1);
+            vf(&bli_sgemm_hwacha_16xn_vf_inner_1);
 
             b_ptr += rs_b;
             a_ptr += 2 * BLIS_MR;
@@ -319,11 +319,11 @@ void bli_sgemm_hwacha_16x16
                           "r" (*(a_ptr+12)), "r" (*(a_ptr+13)), "r" (*(a_ptr+14)), "r" (*(a_ptr+15)) 
                       );
 
-            vf(bli_sgemm_hwacha_16xn_vf_tail);
+            vf(&bli_sgemm_hwacha_16xn_vf_tail);
           }
 
 
-          vf(bli_sgemm_hwacha_16xn_vf_end);
+          vf(&bli_sgemm_hwacha_16xn_vf_end);
 	  __asm__ volatile ("fence" ::: "memory");
 
 /*
