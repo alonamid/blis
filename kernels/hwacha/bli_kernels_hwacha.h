@@ -34,5 +34,9 @@
 
 // -- level-3 --
 
-// gemm (asm d12x6)
+// gemm (asm)
 GEMM_UKR_PROT( float,   s, gemm_hwacha_16x16 )
+
+// trsm
+TRSM_UKR_PROT( float,   s, trsm_l_hwacha_16x16 )
+TRSM_UKR_PROT( float,   s, trsm_u_hwacha_16x16 )
