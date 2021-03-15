@@ -59,7 +59,7 @@
  * We want C to be square (theory of matrix multiplication), so MR=NR=32
  */
 
-void bli_sgemm_hwacha_16x16
+void bli_sgemm_hwacha_16x16_unrolled
      (
        dim_t               k0,
        float*    restrict alpha,
