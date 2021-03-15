@@ -209,7 +209,6 @@ void bli_sgemm_hwacha_16x16_unrolled
           __asm__ volatile ("vmca va13, %0" : : "r" (c+13*rs_c0));
           __asm__ volatile ("vmca va14, %0" : : "r" (c+14*rs_c0));
           __asm__ volatile ("vmca va15, %0" : : "r" (c+15*rs_c0));
-          __asm__ volatile ("vmca va16, %0" : : "r" (c+16*rs_c0));
 
          // load beta
           __asm__ volatile ("vmcs vs61,  %0" : : "r" (*beta));
