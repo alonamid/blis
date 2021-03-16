@@ -56,12 +56,15 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	bli_cntx_set_l3_nat_ukrs
 	(
 	  //0,
-	  3,
+	  5,
 	  // gemm
-	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_hwacha_16x16,            TRUE,
+	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_hwacha_16x16,       TRUE,
           // trsm
-	  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_hwacha_16x16,            TRUE,
-	  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_hwacha_16x16,            TRUE,
+	  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_hwacha_16x16,     TRUE,
+	  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_hwacha_16x16,     TRUE,
+          // gemmtrsm
+	  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_hwacha_16x16, TRUE,
+	  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_hwacha_16x16, TRUE,
 	  cntx
 	);
 

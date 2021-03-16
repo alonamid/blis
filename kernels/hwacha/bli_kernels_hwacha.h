@@ -40,3 +40,7 @@ GEMM_UKR_PROT( float,   s, gemm_hwacha_16x16 )
 // trsm
 TRSM_UKR_PROT( float,   s, trsm_l_hwacha_16x16 )
 TRSM_UKR_PROT( float,   s, trsm_u_hwacha_16x16 )
+
+// gemmtrsm
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_hwacha_16x16 )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_hwacha_16x16 )
