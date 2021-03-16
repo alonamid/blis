@@ -36,7 +36,7 @@ bli_strsm_hwacha_16xn_vf_inner_0:
 	vlw vv0, va0
 	vfmul.s vv0, vv0, vs1
 	vsw vv0, va0
-	vsw vv0, va16
+	OP vsw vv0,, va,%(MR)
         vstop
 
 	.align 3
@@ -46,17 +46,17 @@ bli_strsm_hwacha_16xn_vf_inner_0:
         /* load B[i][_] */
 	OP vlw vv,%i, va,%i,
         /* workspace_vector = 0 */
-	OP vfsub.s vv16,, vv16,, vv16,,
+	OP vfsub.s vv,%(MR), vv,%(MR), vv,%(MR),
 	.set k, 0
 	.rept i
 	/* workspace_vector += A[i][k] * B[k][_] */
-	OP vfmadd.s vv16,, vv,%k, vs,%(k+2), vv16,,
+	OP vfmadd.s vv,%(MR), vv,%k, vs,%(k+2), vv,%(MR)
 	.set k, k+1
 	.endr
         /* workspace_vector = B[i][_] - workspace_vector */
-	OP vfsub.s vv16,, vv,%i, vv16,,
+	OP vfsub.s vv,%(MR), vv,%i, vv,%(MR)
         /* B[i][_] = A[i][i] * workspace_vector */
-	OP vfmul.s vv,%i, vv16,, vs1,,
+	OP vfmul.s vv,%i, vv,%(MR), vs1,,
 	OP vsw vv,%(i), va,%(i)
         /* C[i][_] = B[i][_] */
 	OP vsw vv,%(i), va,%(i+MR)
