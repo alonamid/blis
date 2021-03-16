@@ -80,7 +80,7 @@ extern void bli_sgemm_hwacha_16xn_vf_inner_1(void) __attribute__((visibility("pr
         __asm__ __volatile__ ("vf (%0)" : : "r" (p))
 
 
-void bli_sgemmtrsm_l_hwacha_16x16
+void bli_sgemmtrsm_l_hwacha_16xn
      (
        dim_t               k,
        float*    restrict alpha,

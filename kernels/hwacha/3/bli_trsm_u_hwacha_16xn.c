@@ -74,7 +74,7 @@ extern void bli_strsm_hwacha_16xn_vf_inner_15(void) __attribute__((visibility("p
         __asm__ __volatile__ ("vf (%0)" : : "r" (p))
 
 
-void bli_strsm_u_hwacha_16x16
+void bli_strsm_u_hwacha_16xn
      (
        float*  restrict a11,
        float*  restrict b11,

@@ -70,7 +70,7 @@ extern void bli_sgemm_hwacha_16xn_vf_end(void) __attribute__((visibility("protec
  * We want C to be square (theory of matrix multiplication), so MR=NR=32
  */
 
-void bli_sgemm_hwacha_16x16
+void bli_sgemm_hwacha_16xn
      (
        dim_t               k0,
        float*    restrict alpha,

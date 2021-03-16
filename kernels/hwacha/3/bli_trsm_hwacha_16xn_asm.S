@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 	.set MR, 16
-	.set NR, 16
+	.set NR, 32
 
 	.text
 

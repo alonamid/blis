@@ -58,13 +58,13 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	  //0,
 	  5,
 	  // gemm
-	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_hwacha_16x16,       TRUE,
+	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_hwacha_16xn,       TRUE,
           // trsm
-	  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_hwacha_16x16,     TRUE,
-	  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_hwacha_16x16,     TRUE,
+	  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_hwacha_16xn,     TRUE,
+	  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_hwacha_16xn,     TRUE,
           // gemmtrsm
-	  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_hwacha_16x16, TRUE,
-	  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_hwacha_16x16, TRUE,
+	  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_hwacha_16xn, TRUE,
+	  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_hwacha_16xn, TRUE,
 	  cntx
 	);
 
@@ -92,7 +92,7 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	// Initialize level-3 blocksize objects with architecture-specific values.
 	//                                               s      d      c      z
 	bli_blksz_init_easy( &blkszs[ BLIS_MR ],        16,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NR ],        16,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NR ],        32,     0,     0,     0 );
 	bli_blksz_init_easy( &blkszs[ BLIS_MC ],        256,     0,     0,     0 );
 	bli_blksz_init_easy( &blkszs[ BLIS_KC ],        512,     0,     0,     0 );
 	bli_blksz_init_easy( &blkszs[ BLIS_NC ],        512,     0,     0,     0 );
