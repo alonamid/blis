@@ -32,6 +32,9 @@
 
 */
 
+// -- packing --
+PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
+
 // -- level-3 --
 
 // gemm (asm)

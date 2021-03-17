@@ -85,7 +85,25 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	// Update the context with optimized packm kernels.
         bli_cntx_set_packm_kers
         (
-          0,
+          //0,
+          17,
+          BLIS_PACKM_16XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_17XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_18XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_19XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_20XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_21XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_22XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_23XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_24XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_25XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_26XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_27XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_28XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_29XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_30XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_31XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_32XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
 	  cntx
         );
 
