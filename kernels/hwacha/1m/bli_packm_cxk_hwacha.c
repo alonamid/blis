@@ -82,7 +82,7 @@ void bli_spackm_hwacha_cxk
 {
 
     //TODO: this should be in the blis context initialization
-    __asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 3, 0, 1)));   
+    __asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 2, 1, 1)));
     int vlen_result;
 
     float*  restrict kappa_cast = kappa;
@@ -225,7 +225,7 @@ void bli_spackm_hwacha_cxk
         elem_t* restrict p_edge_lp = (elem_t*)p_cast + (i  )*1;
         for ( dim_t jj = 0; jj < n_edge; ++jj ) {
           __asm__ volatile ("vmca va0,  %0" : : "r" (p_edge_lp + jj*ldp));
-          vf(bli_packm_hwacha_set0);
+          vf(bli_packm_hwacha_vf_sset0);
         }
       }
       else
@@ -253,7 +253,7 @@ void bli_spackm_hwacha_cxk
       elem_t* restrict p_edge_lp = (elem_t*)p_cast + (j  )*ldp;
       for ( dim_t jj = 0; jj < n_edge; ++jj ) {
         __asm__ volatile ("vmca va0,  %0" : : "r" (p_edge_lp + jj*ldp));
-        vf(bli_packm_hwacha_set0);
+        vf(bli_packm_hwacha_vf_sset0);
       }
     }
     else

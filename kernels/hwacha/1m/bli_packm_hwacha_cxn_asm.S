@@ -29,8 +29,8 @@ bli_packm_hwacha_vf_init:
 	.align 3
 	.global bli_packm_hwacha_vf_sset0
 bli_packm_hwacha_vf_sset0:
-	OP vadd vv0,, vs0,, vs0
-	OP vsw vv0,, va0,
+	OP vadd vv2,, vs0,, vs0
+	OP vsh vv2,, va0,
 	vstop
 
 	.align 3
@@ -44,8 +44,8 @@ bli_packm_hwacha_vf_scopy:
 	.global bli_packm_hwacha_vf_scopyconvert
 bli_packm_hwacha_vf_scopyconvert:
 	OP vlstw vv0,, va1,, va2
-	OP vfcvt.s.h vv1,, vv0,,
-	OP vsw vv1,, va0,,
+	OP vfcvt.h.s vv2,, vv0,,
+	OP vsh vv2,, va0,,
 	vstop
 
 	.align 3
@@ -61,6 +61,6 @@ bli_packm_hwacha_vf_sscal2:
 bli_packm_hwacha_vf_sscal2convert:
 	OP vlstw vv0,, va1,, va2
 	OP vfmul.s vv1,, vv0,, vs1
-	OP vfcvt.s.h vv2,, vv1,,
-	OP vsw vv2,, va0,,
+	OP vfcvt.h.s vv2,, vv1,,
+	OP vsh vv2,, va0,,
 	vstop
