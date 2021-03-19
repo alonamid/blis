@@ -71,7 +71,9 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	// Update the context with optimized level-1f kernels.
 	bli_cntx_set_l1f_kers
 	(
-	  0,
+	  //0,
+	  1,
+	  BLIS_DOTXF_KER,  BLIS_FLOAT, bli_sdotxf_hwacha,
 	  cntx
 	);
 
@@ -116,16 +118,16 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	bli_blksz_init_easy( &blkszs[ BLIS_NC ],        512,     0,     0,     0 );
 
 	// level-1f
-	//bli_blksz_init_easy( &blkszs[ BLIS_AF ],         0,     0,     0,     0 );
-	//bli_blksz_init_easy( &blkszs[ BLIS_DF ],         0,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_AF ],         16,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_DF ],         16,     0,     0,     0 );
 
 	// Update the context with the current architecture's register and cache
 	// blocksizes (and multiples) for native execution.
 	bli_cntx_set_blkszs
 	(
 	  //BLIS_NAT, 0,
-	  //BLIS_NAT, 7,
-	  BLIS_NAT, 5,
+	  BLIS_NAT, 7,
+	  //BLIS_NAT, 5,
 	  // level-3
 	  BLIS_NC, &blkszs[ BLIS_NC ], BLIS_NR,
 	  BLIS_KC, &blkszs[ BLIS_KC ], BLIS_KR,
@@ -133,8 +135,8 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	  BLIS_NR, &blkszs[ BLIS_NR ], BLIS_NR,
 	  BLIS_MR, &blkszs[ BLIS_MR ], BLIS_MR,
 	  // level-1f
-	  //BLIS_AF, &blkszs[ BLIS_AF ], BLIS_AF,
-	  //BLIS_DF, &blkszs[ BLIS_DF ], BLIS_DF,
+	  BLIS_AF, &blkszs[ BLIS_AF ], BLIS_AF,
+	  BLIS_DF, &blkszs[ BLIS_DF ], BLIS_DF,
 	  cntx
 	);
 

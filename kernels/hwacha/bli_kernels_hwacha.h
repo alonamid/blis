@@ -32,6 +32,10 @@
 
 */
 
+
+// -- level=1f --
+DOTXF_KER_PROT( float,   s, dotxf_hwacha )
+
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
 
