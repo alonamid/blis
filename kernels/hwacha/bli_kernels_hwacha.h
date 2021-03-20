@@ -35,6 +35,7 @@
 
 // -- level=1f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )
+AXPYF_KER_PROT( float,   s, axpyf_hwacha )
 
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
