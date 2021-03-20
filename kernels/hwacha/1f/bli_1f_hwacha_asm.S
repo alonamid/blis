@@ -28,6 +28,7 @@ bli_sdotxf_hwacha_vf_init:
 	OP vadd vv3,, vs0,, vs0
 	vstop
 
+	.align 3
 	.global bli_sdotxf_hwacha_vf_init_beta
 bli_sdotxf_hwacha_vf_init_beta:
 	vpset vp0
@@ -36,7 +37,7 @@ bli_sdotxf_hwacha_vf_init_beta:
 	OP vadd vv3,, vs0,, vs0
 	vstop
 
-
+	.align 3
 	.global bli_sdotxf_hwacha_vf_main
 bli_sdotxf_hwacha_vf_main:
 	/* load elements of A */
@@ -45,7 +46,7 @@ bli_sdotxf_hwacha_vf_main:
 	OP vfmadd.s vv3,, vv2,, vs2,, vv3
 	vstop
 
-
+	.align 3
 	.global bli_sdotxf_hwacha_vf_alpha
 bli_sdotxf_hwacha_vf_alpha:
 	/* y = alpha * A[:,m] * x[m] */
@@ -53,11 +54,13 @@ bli_sdotxf_hwacha_vf_alpha:
 	OP vsw vv0,, va0,,
 	vstop
 
+	.align 3
 	.global bli_sdotxf_hwacha_vf_early_end
 bli_sdotxf_hwacha_vf_early_end:
 	OP vsw vv0,, va0,,
 	vstop
 
+	.align 3
 	.global bli_saxpyf_hwacha_vf_init
 bli_saxpyf_hwacha_vf_init:
 	vpset vp0
@@ -65,6 +68,7 @@ bli_saxpyf_hwacha_vf_init:
 	OP vadd vv2,, vs0,, vs0
 	vstop
 
+	.align 3
 	.global bli_saxpyf_hwacha_vf_main
 bli_saxpyf_hwacha_vf_main:
 	/* load elements of A */
@@ -73,6 +77,7 @@ bli_saxpyf_hwacha_vf_main:
 	OP vfmadd.s vv2,, vv1,, vs1,, vv2
 	vstop
 
+	.align 3
 	.global bli_saxpyf_hwacha_vf_end
 bli_saxpyf_hwacha_vf_end:
 	/* y = alpha * y[] */
