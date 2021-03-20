@@ -35,6 +35,7 @@
 // -- level01f --
 ADDV_KER_PROT( float,   s, addv_hwacha )
 AXPYV_KER_PROT( float,   s, axpyv_hwacha )
+AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
 
 // -- level01f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )

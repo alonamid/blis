@@ -82,9 +82,10 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	bli_cntx_set_l1v_kers
 	(
 	  //0,
-	  2,
+	  3,
 	  BLIS_ADDV_KER,  BLIS_FLOAT, bli_saddv_hwacha,
 	  BLIS_AXPYV_KER,  BLIS_FLOAT, bli_saxpyv_hwacha,
+	  BLIS_AXPBYV_KER,  BLIS_FLOAT, bli_saxpbyv_hwacha,
 	  cntx
 	);
 

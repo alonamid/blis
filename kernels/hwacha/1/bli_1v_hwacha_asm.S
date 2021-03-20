@@ -27,6 +27,34 @@ bli_1v_hwacha_vf_init:
 	vstop
 
 	.align 3
+	.global bli_saxpbyv_unit_hwacha_vf_main
+bli_saxpbyv_unit_hwacha_vf_main:
+	/* load elements of y */
+	OP vlw vv0,, va0,,
+	/* y = beta * y */
+	OP vfmul.s vv2,, vv0,, vs2
+	/* load elements of x */
+	OP vlw vv1,, va1,,
+	/* y = y + alpha * x */
+	OP vfmadd.s vv2,, vv1,, vs1,, vv2
+	OP vsw vv2,, va0,,
+	vstop
+
+	.align 3
+	.global bli_saxpbyv_stride_hwacha_vf_main
+bli_saxpbyv_stride_hwacha_vf_main:
+	/* load elements of y */
+	OP vlstw vv0,, va0,, va2
+	/* y = beta * y */
+	OP vfmul.s vv2,, vv0,, vs2
+	/* load elements of x */
+	OP vlstw vv1,, va1,, va3
+	/* y = y + alpha * x */
+	OP vfmadd.s vv2,, vv1,, vs1,, vv2
+	OP vsstw vv2,, va0,, va2
+	vstop
+
+	.align 3
 	.global bli_saxpyv_unit_hwacha_vf_main
 bli_saxpyv_unit_hwacha_vf_main:
 	/* load elements of y */
