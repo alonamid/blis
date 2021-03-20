@@ -81,7 +81,10 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	// Update the context with optimized level-1v kernels.
 	bli_cntx_set_l1v_kers
 	(
-	  0,
+	  //0,
+	  2,
+	  BLIS_ADDV_KER,  BLIS_FLOAT, bli_saddv_hwacha,
+	  BLIS_AXPYV_KER,  BLIS_FLOAT, bli_saxpyv_hwacha,
 	  cntx
 	);
 
