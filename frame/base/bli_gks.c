@@ -188,6 +188,11 @@ void bli_gks_init( void )
 		                                              bli_cntx_init_hwacha_ref,
 		                                              bli_cntx_init_hwacha_ind );
 #endif
+#ifdef BLIS_CONFIG_GEMMINIHWACHA
+		bli_gks_register_cntx( BLIS_ARCH_GEMMINIHWACHA, bli_cntx_init_gemminihwacha,
+		                                             	 bli_cntx_init_gemminihwacha_ref,
+		                                              	 bli_cntx_init_gemminihwacha_ind );
+#endif
 
 		// Generic architectures
 #ifdef BLIS_CONFIG_GENERIC

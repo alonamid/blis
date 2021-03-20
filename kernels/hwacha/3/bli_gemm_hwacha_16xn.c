@@ -35,35 +35,14 @@
 
 #include "blis.h"
 
-
-// remove to disable VRU
-#define VRU_ENABLE
-
-#ifdef VRU_ENABLE
-// because gcc complains about shifting without L
-#define VRU_SWITCH 0x8000000000000000
-#else
-#define VRU_SWITCH 0x0
-#endif
-
-
-#define VCFG(nvvd, nvvw, nvvh, nvp) \
-  (((nvvd) & 0x1ff) | \
-  (((nvp) & 0x1f) << 9) | \
-  (((nvvw) & 0x1ff) << 14) | \
-  (((nvvh) & 0x1ff) << 23) | \
-  (VRU_SWITCH))
-
-
 extern void bli_sgemm_hwacha_16xn_vf_init(void) __attribute__((visibility("protected")));
 extern void bli_sgemm_hwacha_16xn_vf_init_beta(void) __attribute__((visibility("protected")));
 extern void bli_sgemm_hwacha_16xn_vf_tail(void) __attribute__((visibility("protected")));
 extern void bli_sgemm_hwacha_16xn_vf_inner_0(void) __attribute__((visibility("protected")));
 extern void bli_sgemm_hwacha_16xn_vf_inner_1(void) __attribute__((visibility("protected")));
 extern void bli_sgemm_hwacha_16xn_vf_end(void) __attribute__((visibility("protected")));
-
-#define vf(p) \
-        __asm__ __volatile__ ("vf (%0)" : : "r" (p))
+extern void bli_sgemm_hwacha_16xn_vf_init_beta_cmajor(void) __attribute__((visibility("protected")));
+extern void bli_sgemm_hwacha_16xn_vf_end_cmajor(void) __attribute__((visibility("protected")));
 
 /* The Hwacha vector register file can hold 4096 FP32 elements.
  * Splitting the register file between A, B, and C give 1024 elements each
@@ -202,11 +181,15 @@ void bli_sgemm_hwacha_16xn
          __asm__ volatile ("vmca va16, %0 \n\t" : : "r" (b_ptr));
          b_ptr += rs_b;
 
+         if (cs_c0 != 1) __asm__ volatile ("vmca va17,  %0" : : "r" (cs_c0));
+
          // load C and first B
 	 if (*beta) {
                 // load beta
                 __asm__ volatile ("vmcs vs63,  %0" : : "r" (*beta));
 		vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
+		//if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
+		//else vf(&bli_sgemm_hwacha_16xn_vf_init_beta_cmajor);
 	 } else {
 		vf(&bli_sgemm_hwacha_16xn_vf_init);
 	 }
@@ -322,8 +305,10 @@ void bli_sgemm_hwacha_16xn
             vf(&bli_sgemm_hwacha_16xn_vf_tail);
           }
 
-
           vf(&bli_sgemm_hwacha_16xn_vf_end);
+          //if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_end);
+          //else vf(&bli_sgemm_hwacha_16xn_vf_end_cmajor);
+
 	  __asm__ volatile ("fence" ::: "memory");
 
 /*

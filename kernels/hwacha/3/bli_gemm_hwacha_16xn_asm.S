@@ -104,3 +104,28 @@ bli_sgemm_hwacha_16xn_vf_end:
 	.endr
 	vstop
 
+	.align 3
+	.global bli_sgemm_hwacha_16xn_vf_init_beta_cmajor
+bli_sgemm_hwacha_16xn_vf_init_beta_cmajor:
+	/* Load MR rows of C; multiply by beta (vs63)  */
+	vpset vp0
+	.set i, 0
+	.rept MR
+	OP vlstw vv,%i, va,%i, va17
+	OP vfmul.s vv,%i, vv,%i, vs63
+	.set i, i+1
+	.endr
+	/* Software pipeline prologue: Load first row of B */
+	vlw vv16, va16
+	vstop
+
+	.align 3
+	.global bli_sgemm_hwacha_16xn_vf_end_cmajor
+bli_sgemm_hwacha_16xn_vf_end_cmajor:
+	/* Store MR rows of C */
+	.set i, 0
+	.rept MR
+	OP vsstw vv,%i, va,%i, va17
+	.set i, i+1
+	.endr
+	vstop

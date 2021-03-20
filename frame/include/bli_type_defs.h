@@ -1114,6 +1114,7 @@ typedef enum
 	// RISC-V
 	BLIS_ARCH_GEMMINI,
 	BLIS_ARCH_HWACHA,
+	BLIS_ARCH_GEMMINIHWACHA,
 
 	// Generic architecture/configuration
 	BLIS_ARCH_GENERIC
@@ -1122,7 +1123,7 @@ typedef enum
 
 // NOTE: This value must be updated to reflect the number of enum values
 // listed above for arch_t!
-#define BLIS_NUM_ARCHS 24
+#define BLIS_NUM_ARCHS 25
 
 
 //

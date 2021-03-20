@@ -213,6 +213,9 @@ void bli_arch_set_id( void )
                 #ifdef BLIS_FAMILY_HWACHA
 		id = BLIS_ARCH_HWACHA;
 		#endif
+                #ifdef BLIS_FAMILY_GEMMINIHWACHA
+		id = BLIS_ARCH_GEMMINIHWACHA;
+		#endif
 
 		// Generic microarchitecture.
 		#ifdef BLIS_FAMILY_GENERIC

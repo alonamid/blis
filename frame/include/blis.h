@@ -61,7 +61,7 @@ extern "C" {
 
 // -- Gemmini Low-Precision Helper Utils --
 
-#ifdef BLIS_CONFIG_GEMMINI
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
 #include "include/gemmini_params.h"
 
 /*

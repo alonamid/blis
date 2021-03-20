@@ -40,22 +40,22 @@ SCAL2V_KER_PROT( float, s, scal2v_lowprec)
 COPYV_KER_PROT( float, s, copyv_lowprec)
 
 // -- packing --
+PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
 PACKM_KER_PROT( float,   s, packm_gemmini_88xk )
 PACKM_KER_PROT( float,   s, packm_gemmini_32xk )
 PACKM_KER_PROT( float,   s, packm_gemmini_4xk )
-PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
 
 // -- level-3 --
 
 // gemm (asm d12x6)
 TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
 TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
+GEMM_UKR_PROT( float,   s, gemm_gemmini_fsm_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_fsm_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_fsm_ws )
 GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
 GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
 GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
 GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
 GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
 GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
-GEMM_UKR_PROT( float,   s, gemm_gemmini_fsm_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_fsm_ws )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_fsm_ws )

@@ -47,6 +47,7 @@ bgq:         bgq
 riscv64:	generic
 gemmini:	gemmini
 hwacha:		hwacha
+gemminihwacha:	gemminihwacha
 
 # Generic architectures.
 generic:     generic

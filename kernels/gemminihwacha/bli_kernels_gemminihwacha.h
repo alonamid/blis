@@ -4,7 +4,7 @@
    An object-based framework for developing high-performance BLAS-like
    libraries.
 
-   Copyright (C) 2014, The University of Texas at Austin
+   Copyright (C) 2019, The University of Texas at Austin
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -32,34 +32,35 @@
 
 */
 
-//#ifndef BLIS_FAMILY_H
-//#define BLIS_FAMILY_H
+// -- l1 --
+INVERTV_KER_PROT( float, s, invertv_lowprec)
+SETV_KER_PROT( float, s, setv_lowprec)
+SCALV_KER_PROT( float, s, scalv_lowprec)
+SCAL2V_KER_PROT( float, s, scal2v_lowprec)
+COPYV_KER_PROT( float, s, copyv_lowprec)
 
-// remove to disable VRU
-#define VRU_ENABLE
+// -- level=1f --
+DOTXF_KER_PROT( float,   s, dotxf_hwacha )
+AXPYF_KER_PROT( float,   s, axpyf_hwacha )
 
-#ifdef VRU_ENABLE
-// because gcc complains about shifting without L
-#define VRU_SWITCH 0x8000000000000000
-#else
-#define VRU_SWITCH 0x0
-#endif
+// -- packing --
+PACKM_KER_PROT( float,   s, packm_gemmini_cxk )
+PACKM_KER_PROT( float,   s, packm_gemmini_88xk )
+PACKM_KER_PROT( float,   s, packm_gemmini_32xk )
+PACKM_KER_PROT( float,   s, packm_gemmini_4xk )
+PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
 
+// -- level-3 --
 
-#define VCFG(nvvd, nvvw, nvvh, nvp) \
-  (((nvvd) & 0x1ff) | \
-  (((nvp) & 0x1f) << 9) | \
-  (((nvvw) & 0x1ff) << 14) | \
-  (((nvvh) & 0x1ff) << 23) | \
-  (VRU_SWITCH))
-
-#define vf(p) \
-        __asm__ __volatile__ ("vf (%0)" : : "r" (p))
-
-#define HWACHA_MIN_DIM 8
-
-#define BLIS_ENABLE_SMALL_MATRIX_TRSM
-#define BLIS_SMALL_MATRIX_THRES_TRSM 64
-
-//#endif
-
+// gemm (asm d12x6)
+TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
+TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
+GEMM_UKR_PROT( float,   s, gemm_gemmini_fsm_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_fsm_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_fsm_ws )
+GEMM_UKR_PROT( float,   s, gemm_gemmini_small_os )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_os )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
+GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )

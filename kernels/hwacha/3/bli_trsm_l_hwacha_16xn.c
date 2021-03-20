@@ -34,26 +34,6 @@
 
 #include "blis.h"
 
-
-// remove to disable VRU
-#define VRU_ENABLE
-
-#ifdef VRU_ENABLE
-// because gcc complains about shifting without L
-#define VRU_SWITCH 0x8000000000000000
-#else
-#define VRU_SWITCH 0x0
-#endif
-
-
-#define VCFG(nvvd, nvvw, nvvh, nvp) \
-  (((nvvd) & 0x1ff) | \
-  (((nvp) & 0x1f) << 9) | \
-  (((nvvw) & 0x1ff) << 14) | \
-  (((nvvh) & 0x1ff) << 23) | \
-  (VRU_SWITCH))
-
-
 extern void bli_strsm_hwacha_16xn_vf_inner_0(void) __attribute__((visibility("protected")));
 extern void bli_strsm_hwacha_16xn_vf_inner_1(void) __attribute__((visibility("protected")));
 extern void bli_strsm_hwacha_16xn_vf_inner_2(void) __attribute__((visibility("protected")));
@@ -70,9 +50,6 @@ extern void bli_strsm_hwacha_16xn_vf_inner_12(void) __attribute__((visibility("p
 extern void bli_strsm_hwacha_16xn_vf_inner_13(void) __attribute__((visibility("protected")));
 extern void bli_strsm_hwacha_16xn_vf_inner_14(void) __attribute__((visibility("protected")));
 extern void bli_strsm_hwacha_16xn_vf_inner_15(void) __attribute__((visibility("protected")));
-
-#define vf(p) \
-        __asm__ __volatile__ ("vf (%0)" : : "r" (p))
 
 
 void bli_strsm_l_hwacha_16xn

@@ -125,6 +125,9 @@ CNTX_INIT_PROTS( gemmini )
 #ifdef BLIS_CONFIG_HWACHA
 CNTX_INIT_PROTS( hwacha )
 #endif
+#ifdef BLIS_CONFIG_GEMMINIHWACHA
+CNTX_INIT_PROTS( gemminihwacha )
+#endif
 
 
 // -- Generic --
@@ -241,6 +244,10 @@ CNTX_INIT_PROTS( generic )
 #include "bli_family_hwacha.h"
 #endif
 
+#ifdef BLIS_FAMILY_GEMMINIHWACHA
+#include "bli_family_gemminihwacha.h"
+#endif
+
 // -- Generic --
 
 #ifdef BLIS_FAMILY_GENERIC
@@ -330,6 +337,9 @@ CNTX_INIT_PROTS( generic )
 #endif
 #ifdef BLIS_KERNELS_HWACHA
 #include "bli_kernels_hwacha.h"
+#endif
+#ifdef BLIS_KERNELS_GEMMINIHWACHA
+#include "bli_kernels_gemminihwacha.h"
 #endif
 
 #endif
