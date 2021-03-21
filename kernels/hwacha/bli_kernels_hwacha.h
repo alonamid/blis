@@ -32,14 +32,15 @@
 
 */
 
-// -- level01f --
+// -- level-1v --
 ADDV_KER_PROT( float,   s, addv_hwacha )
 AXPYV_KER_PROT( float,   s, axpyv_hwacha )
 AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
 
-// -- level01f --
+// -- level-1f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )
 AXPYF_KER_PROT( float,   s, axpyf_hwacha )
+AXPY2V_KER_PROT( float,   s, axpy2v_hwacha )
 
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_hwacha_cxk )

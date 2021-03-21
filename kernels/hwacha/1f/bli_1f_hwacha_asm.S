@@ -84,3 +84,19 @@ bli_saxpyf_hwacha_vf_end:
 	OP vfmadd.s vv0,, vv2,, vs2,, vv0
 	OP vsw vv0,, va0,,
 	vstop
+
+	.align 3
+	.global bli_saxpy2v_unit_hwacha_vf_main
+bli_saxpy2v_unit_hwacha_vf_main:
+	/* load elements of z */
+	OP vlw vv0,, va0,,
+	/* load elements of x */
+	OP vlw vv1,, va1,,
+	/* z = z + alphax * x */
+	OP vfmadd.s vv0,, vv1,, vs1,, vv0
+	/* load elements of y */
+	OP vlw vv2,, va2,,
+	/* z = z + alphay * y */
+	OP vfmadd.s vv0,, vv2,, vs2,, vv0
+	OP vsw vv0,, va0,,
+	vstop
