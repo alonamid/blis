@@ -171,3 +171,43 @@ bli_sswapv_stride_hwacha_vf_main:
 	OP vsstw vv1,, va0,, va2
 	OP vsstw vv0,, va1,, va3
 	vstop
+
+	.align 3
+	.global bli_scopyv_unit_hwacha_vf_main
+bli_scopyv_unit_hwacha_vf_main:
+	/* load elements of x */
+	OP vlw vv0,, va1,,
+	/* store into y */
+	OP vsw vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_scopyv_stride_hwacha_vf_main
+bli_scopyv_stride_hwacha_vf_main:
+	/* load elements of x */
+	OP vlstw vv0,, va1,, va3
+	/* store into y */
+	OP vsstw vv0,, va0,, va2
+	vstop
+
+	.align 3
+	.global bli_scopyconvertv_unit_hwacha_vf_main
+bli_scopyconvertv_unit_hwacha_vf_main:
+	/* load elements of x */
+	OP vlw vv0,, va1,,
+	/* convert */
+	OP vfcvt.h.s vv1,, vv0,,
+	/* store into y */
+	OP vsh vv1,, va0,,
+	vstop
+
+	.align 3
+	.global bli_scopyconvertv_stride_hwacha_vf_main
+bli_scopyconvertv_stride_hwacha_vf_main:
+	/* load elements of x */
+	OP vlstw vv0,, va1,, va3
+	/* convert */
+	OP vfcvt.h.s vv1,, vv0,,
+	/* store into y */
+	OP vssth vv1,, va0,, va2
+	vstop

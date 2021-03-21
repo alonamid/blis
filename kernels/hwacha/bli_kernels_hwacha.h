@@ -39,6 +39,7 @@ XPBYV_KER_PROT( float,   s, xpbyv_hwacha )
 AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
 SUBV_KER_PROT( float,   s, subv_hwacha )
 SWAPV_KER_PROT( float,   s, swapv_hwacha )
+COPYV_KER_PROT( float,   s, copyv_hwacha )
 
 // -- level-1f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )
