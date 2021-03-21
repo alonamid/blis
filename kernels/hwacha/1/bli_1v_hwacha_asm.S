@@ -220,6 +220,24 @@ bli_scopyconvertv_stride_hwacha_vf_main:
 	vstop
 
 	.align 3
+	.global bli_hcopyv_unit_hwacha_vf_main
+bli_hcopyv_unit_hwacha_vf_main:
+	/* load elements of x */
+	OP vlh vv0,, va1,,
+	/* store into y */
+	OP vsh vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_hcopyv_stride_hwacha_vf_main
+bli_hcopyv_stride_hwacha_vf_main:
+	/* load elements of x */
+	OP vlsth vv0,, va1,, va3
+	/* store into y */
+	OP vssth vv0,, va0,, va2
+	vstop
+
+	.align 3
 	.global bli_ssetv_unit_hwacha_vf_main
 bli_ssetv_unit_hwacha_vf_main:
 	/* set elements of x */
@@ -271,7 +289,7 @@ bli_sscalv_unit_hwacha_vf_main:
 bli_sscalv_stride_hwacha_vf_main:
 	/* load x */
 	OP vlstw vv0,, va0,, va1
-	/* set elements of x */
+	/* scale elements of x */
 	OP vfmul.s vv0,, vv0,, vs1,,
 	/* store into x */
 	OP vsstw vv0,, va0,, va1
@@ -295,6 +313,94 @@ bli_hscalv_stride_hwacha_vf_main:
 	OP vlstw vv0,, va0,, va1
 	/* scale elements of x */
 	OP vfmul.h vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vssth vv0,, va0,, va1
+	vstop
+
+	.align 3
+	.global bli_sscal2v_unit_hwacha_vf_main
+bli_sscal2v_unit_hwacha_vf_main:
+	/* load x */
+	OP vlw vv0,, va0,,
+	/* scale elements of x */
+	OP vfmul.s vv0,, vv0,, vs1,,
+	/* store into y */
+	OP vsw vv0,, va1,,
+	vstop
+
+	.align 3
+	.global bli_sscal2v_stride_hwacha_vf_main
+bli_sscal2v_stride_hwacha_vf_main:
+	/* load x */
+	OP vlstw vv0,, va0,, va2
+	/* set elements of x */
+	OP vfmul.s vv0,, vv0,, vs1,,
+	/* store into y */
+	OP vsstw vv0,, va1,, va3
+	vstop
+
+	.align 3
+	.global bli_hscal2v_unit_hwacha_vf_main
+bli_hscal2v_unit_hwacha_vf_main:
+	/* load x */
+	OP vlh vv0,, va0,,
+	/* scale elements of x */
+	OP vfmul.h vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vsh vv0,, va1,,
+	vstop
+
+	.align 3
+	.global bli_hscal2v_stride_hwacha_vf_main
+bli_hscal2v_stride_hwacha_vf_main:
+	/* load x */
+	OP vlstw vv0,, va0,, va2
+	/* scale elements of x */
+	OP vfmul.h vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vssth vv0,, va1,, va3
+	vstop
+
+	.align 3
+	.global bli_sinvertv_unit_hwacha_vf_main
+bli_sinvertv_unit_hwacha_vf_main:
+	/* load x */
+	OP vlw vv0,, va0,,
+	/* invert elements of x */
+	OP vfdiv.s vv0,, vs1,, vv0,,
+	/* store into x */
+	OP vsw vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_sinvertv_stride_hwacha_vf_main
+bli_sinvertv_stride_hwacha_vf_main:
+	/* load x */
+	OP vlstw vv0,, va0,, va1
+	/* invert elements of x */
+	OP vfdiv.s vv0,, vs1,, vv0,,
+	/* store into x */
+	OP vsstw vv0,, va0,, va1
+	vstop
+
+	.align 3
+	.global bli_hinvertv_unit_hwacha_vf_main
+bli_hinvertv_unit_hwacha_vf_main:
+	/* load x */
+	OP vlh vv0,, va0,,
+	/* invert elements of x */
+	OP vfdiv.h vv0,, vs1,, vv0,,
+	/* store into x */
+	OP vsh vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_hinvertv_stride_hwacha_vf_main
+bli_hinvertv_stride_hwacha_vf_main:
+	/* load x */
+	OP vlstw vv0,, va0,, va1
+	/* invert elements of x */
+	OP vfdiv.h vv0,, vs1,, vv0,,
 	/* store into x */
 	OP vssth vv0,, va0,, va1
 	vstop

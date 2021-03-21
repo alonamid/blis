@@ -42,6 +42,8 @@ SWAPV_KER_PROT( float,   s, swapv_hwacha )
 COPYV_KER_PROT( float,   s, copyv_hwacha )
 SETV_KER_PROT( float,   s, setv_hwacha )
 SCALV_KER_PROT( float,   s, scalv_hwacha )
+SCAL2V_KER_PROT( float,   s, scal2v_hwacha )
+INVERTV_KER_PROT( float,   s, invertv_hwacha )
 
 // -- level-1f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )
