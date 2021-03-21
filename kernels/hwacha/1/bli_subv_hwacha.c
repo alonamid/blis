@@ -4,7 +4,7 @@
    An object-based framework for developing high-performance BLAS-like
    libraries.
 
-   Copyright (C) 2019, The University of Texas at Austin
+   Copyright (C) 2014, The University of Texas at Austin
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -32,30 +32,51 @@
 
 */
 
-// -- level-1v --
-ADDV_KER_PROT( float,   s, addv_hwacha )
-AXPYV_KER_PROT( float,   s, axpyv_hwacha )
-AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
-SUBV_KER_PROT( float,   s, subv_hwacha )
-SWAPV_KER_PROT( float,   s, swapv_hwacha )
+#include "blis.h"
 
-// -- level-1f --
-DOTXF_KER_PROT( float,   s, dotxf_hwacha )
-AXPYF_KER_PROT( float,   s, axpyf_hwacha )
-AXPY2V_KER_PROT( float,   s, axpy2v_hwacha )
+extern void bli_1v_hwacha_vf_init(void) __attribute__((visibility("protected")));
+extern void bli_ssubv_unit_hwacha_vf_main(void) __attribute__((visibility("protected")));
+extern void bli_ssubv_stride_hwacha_vf_main(void) __attribute__((visibility("protected")));
 
-// -- packing --
-PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
 
-// -- level-3 --
+void bli_ssubv_hwacha
+     (
+       conj_t           conjx,
+       dim_t            n,
+       float*  restrict x, inc_t incx,
+       float*  restrict y, inc_t incy,
+       cntx_t* restrict cntx
+     )
+{
+	if ( bli_zero_dim1( n ) ) return;
 
-// gemm (asm)
-GEMM_UKR_PROT( float,   s, gemm_hwacha_16xn )
-
-// trsm
-TRSM_UKR_PROT( float,   s, trsm_l_hwacha_16xn )
-TRSM_UKR_PROT( float,   s, trsm_u_hwacha_16xn )
-
-// gemmtrsm
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_hwacha_16xn )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_hwacha_16xn )
+	__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 2, 0, 1)));
+	int vlen_result;
+	__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n));
+	vf(&bli_1v_hwacha_vf_init);
+	if ( incx == 1 && incy == 1 )
+	{
+		for ( dim_t i = 0; i < n;)
+		{
+			__asm__ volatile ("vmca va0,  %0" : : "r" (y+i));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
+			vf(&bli_ssubv_unit_hwacha_vf_main);
+	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
+			i += vlen_result;
+		}
+	}
+	else
+	{
+		__asm__ volatile ("vmca va2,  %0" : : "r" (incy*sizeof(float)));
+		__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
+		for ( dim_t i = 0; i < n;)
+		{
+			__asm__ volatile ("vmca va0,  %0" : : "r" (y+i*incy));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (x+i*incx));
+			vf(&bli_ssubv_stride_hwacha_vf_main);
+	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
+			i += vlen_result;
+		}
+	}
+	__asm__ volatile ("fence" ::: "memory");
+}
