@@ -35,6 +35,7 @@
 // -- level-1v --
 ADDV_KER_PROT( float,   s, addv_hwacha )
 AXPYV_KER_PROT( float,   s, axpyv_hwacha )
+XPBYV_KER_PROT( float,   s, xpbyv_hwacha )
 AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
 SUBV_KER_PROT( float,   s, subv_hwacha )
 SWAPV_KER_PROT( float,   s, swapv_hwacha )
