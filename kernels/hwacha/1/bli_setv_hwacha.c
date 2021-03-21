@@ -35,86 +35,81 @@
 #include "blis.h"
 
 extern void bli_1v_hwacha_vf_init(void) __attribute__((visibility("protected")));
-extern void bli_scopyv_unit_hwacha_vf_main(void) __attribute__((visibility("protected")));
-extern void bli_scopyv_stride_hwacha_vf_main(void) __attribute__((visibility("protected")));
-extern void bli_scopyconvertv_unit_hwacha_vf_main(void) __attribute__((visibility("protected")));
-extern void bli_scopyconvertv_stride_hwacha_vf_main(void) __attribute__((visibility("protected")));
+extern void bli_ssetv_unit_hwacha_vf_main(void) __attribute__((visibility("protected")));
+extern void bli_ssetv_stride_hwacha_vf_main(void) __attribute__((visibility("protected")));
+extern void bli_hsetv_unit_hwacha_vf_main(void) __attribute__((visibility("protected")));
+extern void bli_hsetv_stride_hwacha_vf_main(void) __attribute__((visibility("protected")));
 
-void bli_scopyv_hwacha
+void bli_ssetv_hwacha
      (
-       conj_t           conjx,
+       conj_t           conjalpha,
        dim_t            n,
+       float*  restrict alpha,
        float*  restrict x, inc_t incx,
-       float*  restrict y, inc_t incy,
        cntx_t* restrict cntx
      )
 {
 	if ( bli_zero_dim1( n ) ) return;
 
-	if (bli_cntx_lowprec_in_use(cntx) && bli_cntx_lowprec_elem_out(cntx))
+	if (bli_cntx_lowprec_in_use(cntx))
 	{
-		__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 1, 1, 1)));
+		__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 0, 1, 1)));
 		int vlen_result;
 		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n));
 		vf(&bli_1v_hwacha_vf_init);
 
-		elem_t* restrict y_elem = (elem_t*)y;
-		if ( incx == 1 && incy == 1 )
+		__asm__ volatile ("vmcs vs1,  %0" : : "r" (*alpha));
+		elem_t* restrict x_elem = (elem_t*)x;
+
+		if ( incx == 1 )
 		{
 			for ( dim_t i = 0; i < n;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y_elem+i));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
-				vf(&bli_scopyconvertv_unit_hwacha_vf_main);
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+i));
+				vf(&bli_hsetv_unit_hwacha_vf_main);
 	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
 				i += vlen_result;
 			}
 		}
 		else
 		{
-			__asm__ volatile ("vmca va2,  %0" : : "r" (incy*sizeof(elem_t)));
-			__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (incx*sizeof(elem_t)));
 			for ( dim_t i = 0; i < n;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y_elem+i*incy));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i*incx));
-				vf(&bli_scopyconvertv_stride_hwacha_vf_main);
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+i*incx));
+				vf(&bli_hsetv_stride_hwacha_vf_main);
 	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
 				i += vlen_result;
 			}
 		}
-	}
-	else
-	{
+	} else {
 		__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 1, 0, 1)));
 		int vlen_result;
 		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n));
 		vf(&bli_1v_hwacha_vf_init);
 
-		if ( incx == 1 && incy == 1 )
+		__asm__ volatile ("vmcs vs1,  %0" : : "r" (*alpha));
+
+		if ( incx == 1 )
 		{
 			for ( dim_t i = 0; i < n;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y+i));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
-				vf(&bli_scopyv_unit_hwacha_vf_main);
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x+i));
+				vf(&bli_ssetv_unit_hwacha_vf_main);
 	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
 				i += vlen_result;
 			}
 		}
 		else
 		{
-			__asm__ volatile ("vmca va2,  %0" : : "r" (incy*sizeof(float)));
-			__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (incx*sizeof(float)));
 			for ( dim_t i = 0; i < n;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y+i*incy));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i*incx));
-				vf(&bli_scopyv_stride_hwacha_vf_main);
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x+i*incx));
+				vf(&bli_ssetv_stride_hwacha_vf_main);
 	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
 				i += vlen_result;
 			}
 		}
 	}
-	__asm__ volatile ("fence" ::: "memory");
 }

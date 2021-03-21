@@ -27,6 +27,13 @@ bli_1v_hwacha_vf_init:
 	vstop
 
 	.align 3
+	.global bli_1v_hwacha_vf_hinit
+bli_1v_hwacha_vf_hinit:
+	vpset vp0
+	vfcvt.h.s vs1, vs1
+	vstop
+
+	.align 3
 	.global bli_saxpbyv_unit_hwacha_vf_main
 bli_saxpbyv_unit_hwacha_vf_main:
 	/* load elements of y */
@@ -210,4 +217,84 @@ bli_scopyconvertv_stride_hwacha_vf_main:
 	OP vfcvt.h.s vv1,, vv0,,
 	/* store into y */
 	OP vssth vv1,, va0,, va2
+	vstop
+
+	.align 3
+	.global bli_ssetv_unit_hwacha_vf_main
+bli_ssetv_unit_hwacha_vf_main:
+	/* set elements of x */
+	OP vfadd.s vv0,, vs0,, vs1,,
+	/* store into x */
+	OP vsw vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_ssetv_stride_hwacha_vf_main
+bli_ssetv_stride_hwacha_vf_main:
+	/* set elements of x */
+	OP vfadd.s vv0,, vs0,, vs1,,
+	/* store into x */
+	OP vsstw vv0,, va0,, va1
+	vstop
+
+	.align 3
+	.global bli_hsetv_unit_hwacha_vf_main
+bli_hsetv_unit_hwacha_vf_main:
+	/* set elements of x */
+	OP vfcvt.h.s vv0,, vs1,,
+	/* store into x */
+	OP vsh vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_hsetv_stride_hwacha_vf_main
+bli_hsetv_stride_hwacha_vf_main:
+	/* set elements of x */
+	OP vfcvt.h.s vv0,, vs1,,
+	/* store into x */
+	OP vssth vv0,, va0,, va1
+	vstop
+
+	.align 3
+	.global bli_sscalv_unit_hwacha_vf_main
+bli_sscalv_unit_hwacha_vf_main:
+	/* load x */
+	OP vlw vv0,, va0,,
+	/* scale elements of x */
+	OP vfmul.s vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vsw vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_sscalv_stride_hwacha_vf_main
+bli_sscalv_stride_hwacha_vf_main:
+	/* load x */
+	OP vlstw vv0,, va0,, va1
+	/* set elements of x */
+	OP vfmul.s vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vsstw vv0,, va0,, va1
+	vstop
+
+	.align 3
+	.global bli_hscalv_unit_hwacha_vf_main
+bli_hscalv_unit_hwacha_vf_main:
+	/* load x */
+	OP vlh vv0,, va0,,
+	/* scale elements of x */
+	OP vfmul.h vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vsh vv0,, va0,,
+	vstop
+
+	.align 3
+	.global bli_hscalv_stride_hwacha_vf_main
+bli_hscalv_stride_hwacha_vf_main:
+	/* load x */
+	OP vlstw vv0,, va0,, va1
+	/* scale elements of x */
+	OP vfmul.h vv0,, vv0,, vs1,,
+	/* store into x */
+	OP vssth vv0,, va0,, va1
 	vstop
