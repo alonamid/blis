@@ -181,15 +181,15 @@ void bli_sgemm_hwacha_16xn
          __asm__ volatile ("vmca va16, %0 \n\t" : : "r" (b_ptr));
          b_ptr += rs_b;
 
-         if (cs_c0 != 1) __asm__ volatile ("vmca va17,  %0" : : "r" (cs_c0));
+         if (cs_c0 != 1) __asm__ volatile ("vmca va17,  %0" : : "r" (cs_c0*sizeof(float)));
 
          // load C and first B
 	 if (*beta) {
                 // load beta
                 __asm__ volatile ("vmcs vs63,  %0" : : "r" (*beta));
-		vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
-		//if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
-		//else vf(&bli_sgemm_hwacha_16xn_vf_init_beta_cmajor);
+		//vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
+		if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
+		else vf(&bli_sgemm_hwacha_16xn_vf_init_beta_cmajor);
 	 } else {
 		vf(&bli_sgemm_hwacha_16xn_vf_init);
 	 }
@@ -305,9 +305,9 @@ void bli_sgemm_hwacha_16xn
             vf(&bli_sgemm_hwacha_16xn_vf_tail);
           }
 
-          vf(&bli_sgemm_hwacha_16xn_vf_end);
-          //if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_end);
-          //else vf(&bli_sgemm_hwacha_16xn_vf_end_cmajor);
+          //vf(&bli_sgemm_hwacha_16xn_vf_end);
+          if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_end);
+          else vf(&bli_sgemm_hwacha_16xn_vf_end_cmajor);
 
 	  __asm__ volatile ("fence" ::: "memory");
 
