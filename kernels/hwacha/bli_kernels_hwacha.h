@@ -51,6 +51,7 @@ DOTXV_KER_PROT( float,   s, dotxv_hwacha )
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )
 AXPYF_KER_PROT( float,   s, axpyf_hwacha )
 AXPY2V_KER_PROT( float,   s, axpy2v_hwacha )
+DOTAXPYV_KER_PROT( float,   s, dotaxpyv_hwacha )
 
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_hwacha_cxk )

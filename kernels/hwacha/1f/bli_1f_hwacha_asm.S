@@ -100,3 +100,37 @@ bli_saxpy2v_unit_hwacha_vf_main:
 	OP vfmadd.s vv0,, vv2,, vs2,, vv0
 	OP vsw vv0,, va0,,
 	vstop
+
+	.align 3
+	.global bli_sdotaxpyv_unit_hwacha_vf_loop
+bli_sdotaxpyv_unit_hwacha_vf_loop:
+	/* load elements of y */
+	OP vlw vv0,, va0,,
+	/* load elements of x */
+	OP vlw vv1,, va1,,
+	/* r = r + y*x */
+	OP vfmadd.s vv2,, vv1,, vv0,, vv2
+	/* load elements of z */
+	OP vlw vv3,, va6,,
+	/* z = z + alpha*x */
+	OP vfmadd.s vv3,, vv1,, vs1,, vv3
+	/* store elements of z */
+	OP vsw vv3,, va6,,
+	vstop
+
+	.align 3
+	.global bli_sdotaxpyv_stride_hwacha_vf_loop
+bli_sdotaxpyv_stride_hwacha_vf_loop:
+	/* load elements of y */
+	OP vlstw vv0,, va0,, va2,,
+	/* load elements of x */
+	OP vlstw vv1,, va1,, va3,,
+	/* r = r + y*x */
+	OP vfmadd.s vv2,, vv1,, vv0,, vv2
+	/* load elements of z */
+	OP vlstw vv3,, va6,, va7,,
+	/* z = z + alpha*x */
+	OP vfmadd.s vv3,, vv1,, vs1,, vv3
+	/* store elements of z */
+	OP vsstw vv3,, va6,, va7,,
+	vstop
