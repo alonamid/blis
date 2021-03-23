@@ -72,6 +72,7 @@ void bli_sscalv_hwacha
 	}
 
 
+	dim_t offset = 0;
 	if (bli_cntx_lowprec_in_use(cntx))
 	{
 		elem_t* restrict x_elem = (elem_t*)x;
@@ -84,23 +85,25 @@ void bli_sscalv_hwacha
 
 		if ( incx == 1 )
 		{
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+i));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+offset));
 				vf(&bli_hscalv_unit_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 		else
 		{
 			__asm__ volatile ("vmca va1,  %0" : : "r" (incx*sizeof(elem_t)));
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+i*incx));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+offset*incx));
 				vf(&bli_hscalv_stride_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 	} else {
@@ -114,23 +117,25 @@ void bli_sscalv_hwacha
 
 		if ( incx == 1 )
 		{
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (x+i));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x+offset));
 				vf(&bli_sscalv_unit_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 		else
 		{
 			__asm__ volatile ("vmca va1,  %0" : : "r" (incx*sizeof(float)));
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (x+i*incx));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (x+offset*incx));
 				vf(&bli_sscalv_stride_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 	}

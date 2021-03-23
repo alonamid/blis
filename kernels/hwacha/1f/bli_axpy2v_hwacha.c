@@ -54,20 +54,22 @@ void bli_saxpy2v_hwacha
 
 	if ( incz == 1 && incx == 1 && incy == 1 )
 	{
+		dim_t offset = 0;
 		__asm__ volatile ("vmcs vs1,  %0" : : "r" (*alphax));
 		__asm__ volatile ("vmcs vs2,  %0" : : "r" (*alphay));
 		__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 3, 0, 1)));
 		int vlen_result;
 		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n));
 		vf(&bli_1v_hwacha_vf_init);
-		for ( dim_t i = 0; i < n;)
+		for ( dim_t i = n; i > 0;)
 		{
-			__asm__ volatile ("vmca va0,  %0" : : "r" (z+i));
-			__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
-			__asm__ volatile ("vmca va2,  %0" : : "r" (y+i));
+			__asm__ volatile ("vmca va0,  %0" : : "r" (z+offset));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
+			__asm__ volatile ("vmca va2,  %0" : : "r" (y+offset));
 			vf(&bli_saxpy2v_unit_hwacha_vf_main);
-	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-			i += vlen_result;
+			offset += vlen_result;
+			i -= vlen_result;
+	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 		}
 	}
 	else

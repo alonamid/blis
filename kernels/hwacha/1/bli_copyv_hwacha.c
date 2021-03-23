@@ -51,6 +51,7 @@ void bli_scopyv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	dim_t offset = 0;
 	if (bli_cntx_lowprec_in_use(cntx) && bli_cntx_lowprec_elem_out(cntx))
 	{
 		__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 1, 1, 1)));
@@ -61,26 +62,28 @@ void bli_scopyv_hwacha
 		elem_t* restrict y_elem = (elem_t*)y;
 		if ( incx == 1 && incy == 1 )
 		{
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y_elem+i));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (y_elem+offset));
+				__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
 				vf(&bli_scopyconvertv_unit_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 		else
 		{
 			__asm__ volatile ("vmca va2,  %0" : : "r" (incy*sizeof(elem_t)));
 			__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y_elem+i*incy));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i*incx));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (y_elem+offset*incy));
+				__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset*incx));
 				vf(&bli_scopyconvertv_stride_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 	}
@@ -93,26 +96,28 @@ void bli_scopyv_hwacha
 
 		if ( incx == 1 && incy == 1 )
 		{
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y+i));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
+				__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
 				vf(&bli_scopyv_unit_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 		else
 		{
 			__asm__ volatile ("vmca va2,  %0" : : "r" (incy*sizeof(float)));
 			__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
-			for ( dim_t i = 0; i < n;)
+			for ( dim_t i = n; i > 0;)
 			{
-				__asm__ volatile ("vmca va0,  %0" : : "r" (y+i*incy));
-				__asm__ volatile ("vmca va1,  %0" : : "r" (x+i*incx));
+				__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset*incy));
+				__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset*incx));
 				vf(&bli_scopyv_stride_hwacha_vf_main);
-	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-				i += vlen_result;
+				offset += vlen_result;
+				i -= vlen_result;
+	  			__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 			}
 		}
 	}

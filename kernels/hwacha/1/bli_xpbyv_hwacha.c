@@ -86,6 +86,7 @@ void bli_sxpbyv_hwacha
 		return;
 	}
 
+	dim_t offset = 0;
 	__asm__ volatile ("vmcs vs1,  %0" : : "r" (*beta));
 	__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 2, 0, 1)));
 	int vlen_result;
@@ -93,26 +94,28 @@ void bli_sxpbyv_hwacha
 	vf(&bli_1v_hwacha_vf_init);
 	if ( incx == 1 && incy == 1 )
 	{
-		for ( dim_t i = 0; i < n;)
+		for ( dim_t i = n; i > 0;)
 		{
-			__asm__ volatile ("vmca va0,  %0" : : "r" (y+i));
-			__asm__ volatile ("vmca va1,  %0" : : "r" (x+i));
+			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
 			vf(&bli_sxpbyv_unit_hwacha_vf_main);
-	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-			i += vlen_result;
+			offset += vlen_result;
+			i -= vlen_result;
+	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 		}
 	}
 	else
 	{
 		__asm__ volatile ("vmca va2,  %0" : : "r" (incy*sizeof(float)));
 		__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
-		for ( dim_t i = 0; i < n;)
+		for ( dim_t i = n; i > 0;)
 		{
-			__asm__ volatile ("vmca va0,  %0" : : "r" (y+i*incy));
-			__asm__ volatile ("vmca va1,  %0" : : "r" (x+i*incx));
+			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset*incy));
+			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset*incx));
 			vf(&bli_sxpbyv_stride_hwacha_vf_main);
-	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (n-i));
-			i += vlen_result;
+			offset += vlen_result;
+			i -= vlen_result;
+	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 		}
 	}
 	__asm__ volatile ("fence" ::: "memory");
