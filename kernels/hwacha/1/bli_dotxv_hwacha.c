@@ -4,7 +4,7 @@
    An object-based framework for developing high-performance BLAS-like
    libraries.
 
-   Copyright (C) 2019, The University of Texas at Austin
+   Copyright (C) 2014, The University of Texas at Austin
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -32,38 +32,40 @@
 
 */
 
-// -- level-1v --
-ADDV_KER_PROT( float,   s, addv_hwacha )
-AXPYV_KER_PROT( float,   s, axpyv_hwacha )
-XPBYV_KER_PROT( float,   s, xpbyv_hwacha )
-AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
-SUBV_KER_PROT( float,   s, subv_hwacha )
-SWAPV_KER_PROT( float,   s, swapv_hwacha )
-COPYV_KER_PROT( float,   s, copyv_hwacha )
-SETV_KER_PROT( float,   s, setv_hwacha )
-SCALV_KER_PROT( float,   s, scalv_hwacha )
-SCAL2V_KER_PROT( float,   s, scal2v_hwacha )
-INVERTV_KER_PROT( float,   s, invertv_hwacha )
-DOTV_KER_PROT( float,   s, dotv_hwacha )
-DOTXV_KER_PROT( float,   s, dotxv_hwacha )
+#include "blis.h"
 
-// -- level-1f --
-DOTXF_KER_PROT( float,   s, dotxf_hwacha )
-AXPYF_KER_PROT( float,   s, axpyf_hwacha )
-AXPY2V_KER_PROT( float,   s, axpy2v_hwacha )
+void bli_sdotxv_hwacha
+     (
+       conj_t           conjx,
+       conj_t           conjy,
+       dim_t            n,
+       float*  restrict alpha,
+       float*  restrict x, inc_t incx,
+       float*  restrict y, inc_t incy,
+       float*  restrict beta,
+       float*  restrict rho,
+       cntx_t* restrict cntx
+     )
+{
 
-// -- packing --
-PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
+	if ( bli_zero_dim1( n ) || *alpha == 0 ) 
+	{
+		*rho = *beta * *rho;
+		return;
+	}
 
-// -- level-3 --
+	float dot_result;
 
-// gemm (asm)
-GEMM_UKR_PROT( float,   s, gemm_hwacha_16xn )
+        bli_sdotv_hwacha
+        (
+           conjx,
+           conjy,
+           n,
+           x, incx,
+           y, incy,
+           &dot_result,
+           cntx
+       );
 
-// trsm
-TRSM_UKR_PROT( float,   s, trsm_l_hwacha_16xn )
-TRSM_UKR_PROT( float,   s, trsm_u_hwacha_16xn )
-
-// gemmtrsm
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_hwacha_16xn )
-GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_hwacha_16xn )
+	*rho = (*beta * *rho) + (*alpha * dot_result);
+}

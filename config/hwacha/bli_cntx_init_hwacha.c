@@ -83,7 +83,7 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	bli_cntx_set_l1v_kers
 	(
 	  //0,
-	  12,
+	  13,
 	  BLIS_ADDV_KER,  BLIS_FLOAT, bli_saddv_hwacha,
 	  BLIS_AXPYV_KER,  BLIS_FLOAT, bli_saxpyv_hwacha,
 	  BLIS_XPBYV_KER,  BLIS_FLOAT, bli_sxpbyv_hwacha,
@@ -96,6 +96,7 @@ void bli_cntx_init_hwacha( cntx_t* cntx )
 	  BLIS_SCAL2V_KER,  BLIS_FLOAT, bli_sscal2v_hwacha,
 	  BLIS_INVERTV_KER,  BLIS_FLOAT, bli_sinvertv_hwacha,
 	  BLIS_DOTV_KER,  BLIS_FLOAT, bli_sdotv_hwacha,
+	  BLIS_DOTXV_KER,  BLIS_FLOAT, bli_sdotxv_hwacha,
 	  cntx
 	);
 
