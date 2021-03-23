@@ -57,6 +57,8 @@
         __asm__ __volatile__ ("vf (%0)" : : "r" (p))
 
 #define HWACHA_MIN_DIM 8
+#define SMAXVL 2048
+
 
 #define BLIS_ENABLE_SMALL_MATRIX_TRSM
 #define BLIS_SMALL_MATRIX_THRES_TRSM 64

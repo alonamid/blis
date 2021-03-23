@@ -44,6 +44,7 @@ SETV_KER_PROT( float,   s, setv_hwacha )
 SCALV_KER_PROT( float,   s, scalv_hwacha )
 SCAL2V_KER_PROT( float,   s, scal2v_hwacha )
 INVERTV_KER_PROT( float,   s, invertv_hwacha )
+DOTV_KER_PROT( float,   s, dotv_hwacha )
 
 // -- level-1f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )

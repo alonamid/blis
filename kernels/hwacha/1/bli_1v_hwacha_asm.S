@@ -404,3 +404,47 @@ bli_hinvertv_stride_hwacha_vf_main:
 	/* store into x */
 	OP vssth vv0,, va0,, va1
 	vstop
+
+	.align 3
+	.global bli_sdotv_hwacha_vf_init
+bli_sdotv_hwacha_vf_init:
+	vpset vp0
+	OP vfadd.s vv2,, vs0,, vs0,,
+	vstop
+
+	.align 3
+	.global bli_sdotv_unit_hwacha_vf_loop
+bli_sdotv_unit_hwacha_vf_loop:
+	/* load elements of y */
+	OP vlw vv0,, va0,,
+	/* load elements of x */
+	OP vlw vv1,, va1,,
+	/* r = r + y*x */
+	OP vfmadd.s vv2,, vv1,, vv0,, vv2
+	vstop
+
+	.align 3
+	.global bli_sdotv_stride_hwacha_vf_loop
+bli_sdotv_stride_hwacha_vf_loop:
+	/* load elements of y */
+	OP vlstw vv0,, va0,, va2,,
+	/* load elements of x */
+	OP vlstw vv1,, va1,, va3,,
+	/* r = r + y*x */
+	OP vfmadd.s vv2,, vv1,, vv0,, vv2
+	vstop
+
+	.align 3
+	.global bli_sdotv_hwacha_vf_post
+bli_sdotv_hwacha_vf_post:
+	/* store result to reduction buffer*/
+	OP vsw vv2,, va4,,
+	vstop
+
+	.align 3
+	.global bli_sdotv_hwacha_vf_reduce_loop
+bli_sdotv_hwacha_vf_reduce_loop:
+	vlw vv1, va5
+	vfadd.s vv2, vv2, vv1
+	vsw vv2, va4
+	vstop
