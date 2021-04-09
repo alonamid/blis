@@ -58,11 +58,24 @@
         __asm__ __volatile__ ("vf (%0)" : : "r" (p))
 
 #define HWACHA_MIN_DIM 8
+#define SMAXVL 2048
 
 #define BLIS_ENABLE_SMALL_MATRIX_TRSM
 #define BLIS_SMALL_MATRIX_THRES_TRSM DIM*DIM
 
 #define BLIS_STACK_BUF_MAX_SIZE  ( ACC_ROWS * MAX_BYTES * 2 )
+
+#define MEMTOUCH(iaddr, type, bound) ({                           \
+      volatile type* addr = iaddr;                                \
+      volatile type t;                                            \
+      t = (addr)[0];                                              \
+      (addr)[0] = t;                                              \
+      volatile type* tf = (type*) (((((uintptr_t) (addr)) >> 12) + 1) << 12);    \
+      for (; tf - (addr) < bound; tf += (1 << 12) / sizeof(type)) {     \
+        t = tf[0];                                                      \
+        tf[0] = t;                                                      \
+      }                                                                 \
+    })
 
 
 //#endif

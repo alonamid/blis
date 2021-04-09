@@ -32,16 +32,33 @@
 
 */
 
-// -- l1 --
+// -- level-1v - CPU --
 INVERTV_KER_PROT( float, s, invertv_lowprec)
 SETV_KER_PROT( float, s, setv_lowprec)
 SCALV_KER_PROT( float, s, scalv_lowprec)
 SCAL2V_KER_PROT( float, s, scal2v_lowprec)
 COPYV_KER_PROT( float, s, copyv_lowprec)
 
-// -- level=1f --
+// -- level-1v - Hwacha --
+ADDV_KER_PROT( float,   s, addv_hwacha )
+AXPYV_KER_PROT( float,   s, axpyv_hwacha )
+XPBYV_KER_PROT( float,   s, xpbyv_hwacha )
+AXPBYV_KER_PROT( float,   s, axpbyv_hwacha )
+SUBV_KER_PROT( float,   s, subv_hwacha )
+SWAPV_KER_PROT( float,   s, swapv_hwacha )
+COPYV_KER_PROT( float,   s, copyv_hwacha )
+SETV_KER_PROT( float,   s, setv_hwacha )
+SCALV_KER_PROT( float,   s, scalv_hwacha )
+SCAL2V_KER_PROT( float,   s, scal2v_hwacha )
+INVERTV_KER_PROT( float,   s, invertv_hwacha )
+DOTV_KER_PROT( float,   s, dotv_hwacha )
+DOTXV_KER_PROT( float,   s, dotxv_hwacha )
+
+// -- level-1f --
 DOTXF_KER_PROT( float,   s, dotxf_hwacha )
 AXPYF_KER_PROT( float,   s, axpyf_hwacha )
+AXPY2V_KER_PROT( float,   s, axpy2v_hwacha )
+DOTAXPYV_KER_PROT( float,   s, dotaxpyv_hwacha )
 
 // -- packing --
 PACKM_KER_PROT( float,   s, packm_gemmini_cxk )

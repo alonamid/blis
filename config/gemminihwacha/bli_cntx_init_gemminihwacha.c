@@ -74,7 +74,12 @@ void bli_cntx_init_gemminihwacha( cntx_t* cntx )
 	// Update the context with optimized level-1f kernels.
 	bli_cntx_set_l1f_kers
 	(
-	  0,
+	  //0,
+	  4,
+	  BLIS_DOTXF_KER,  BLIS_FLOAT, bli_sdotxf_hwacha,
+	  BLIS_AXPYF_KER,  BLIS_FLOAT, bli_saxpyf_hwacha,
+	  BLIS_AXPY2V_KER,  BLIS_FLOAT, bli_saxpy2v_hwacha,
+	  BLIS_DOTAXPYV_KER,  BLIS_FLOAT, bli_sdotaxpyv_hwacha,
 	  cntx
 	);
 
