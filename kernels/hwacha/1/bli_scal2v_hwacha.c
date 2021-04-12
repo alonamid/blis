@@ -90,6 +90,8 @@ void bli_sscal2v_hwacha
 			{
 				for ( dim_t i = n; i > 0;)
 				{
+            				MEMTOUCH(y_elem+offset, elem_t, vlen_result);
+            				MEMTOUCH(x_elem+offset, elem_t, vlen_result);
 					__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+offset));
 					__asm__ volatile ("vmca va1,  %0" : : "r" (y_elem+offset));
 					vf(&bli_hcopyv_unit_hwacha_vf_main);
@@ -104,6 +106,8 @@ void bli_sscal2v_hwacha
 				__asm__ volatile ("vmca va3,  %0" : : "r" (incy*sizeof(elem_t)));
 				for ( dim_t i = n; i > 0;)
 				{
+            				MEMTOUCH(y_elem+offset*incy, elem_t, vlen_result*incy);
+            				MEMTOUCH(x_elem+offset*incx, elem_t, vlen_result*incx);
 					__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+offset*incx));
 					__asm__ volatile ("vmca va1,  %0" : : "r" (y_elem+offset*incy));
 					vf(&bli_hcopyv_stride_hwacha_vf_main);
@@ -125,6 +129,8 @@ void bli_sscal2v_hwacha
 			{
 				for ( dim_t i = n; i > 0;)
 				{
+            				MEMTOUCH(y+offset, float, vlen_result);
+            				MEMTOUCH(x+offset, float, vlen_result);
 					__asm__ volatile ("vmca va0,  %0" : : "r" (x+offset));
 					__asm__ volatile ("vmca va1,  %0" : : "r" (y+offset));
 					vf(&bli_scopyv_unit_hwacha_vf_main);
@@ -139,6 +145,8 @@ void bli_sscal2v_hwacha
 				__asm__ volatile ("vmca va3,  %0" : : "r" (incy*sizeof(float)));
 				for ( dim_t i = n; i > 0;)
 				{
+            				MEMTOUCH(y+offset*incy, float, vlen_result*incy);
+            				MEMTOUCH(x+offset*incx, float, vlen_result*incx);
 					__asm__ volatile ("vmca va0,  %0" : : "r" (x+offset*incx));
 					__asm__ volatile ("vmca va1,  %0" : : "r" (y+offset*incy));
 					vf(&bli_scopyv_stride_hwacha_vf_main);
@@ -166,6 +174,8 @@ void bli_sscal2v_hwacha
 		{
 			for ( dim_t i = n; i > 0;)
 			{
+            			MEMTOUCH(y_elem+offset, elem_t, vlen_result);
+            			MEMTOUCH(x_elem+offset, elem_t, vlen_result);
 				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+offset));
 				__asm__ volatile ("vmca va1,  %0" : : "r" (y_elem+offset));
 				vf(&bli_hscal2v_unit_hwacha_vf_main);
@@ -180,6 +190,8 @@ void bli_sscal2v_hwacha
 			__asm__ volatile ("vmca va3,  %0" : : "r" (incy*sizeof(elem_t)));
 			for ( dim_t i = n; i > 0;)
 			{
+            			MEMTOUCH(y_elem+offset*incy, elem_t, vlen_result*incy);
+            			MEMTOUCH(x_elem+offset*incx, elem_t, vlen_result*incx);
 				__asm__ volatile ("vmca va0,  %0" : : "r" (x_elem+offset*incx));
 				__asm__ volatile ("vmca va1,  %0" : : "r" (y_elem+offset*incy));
 				vf(&bli_hscal2v_stride_hwacha_vf_main);
@@ -201,6 +213,8 @@ void bli_sscal2v_hwacha
 		{
 			for ( dim_t i = n; i > 0;)
 			{
+            			MEMTOUCH(y+offset, float, vlen_result);
+            			MEMTOUCH(x+offset, float, vlen_result);
 				__asm__ volatile ("vmca va0,  %0" : : "r" (x+offset));
 				__asm__ volatile ("vmca va1,  %0" : : "r" (y+offset));
 				vf(&bli_sscal2v_unit_hwacha_vf_main);
@@ -215,6 +229,8 @@ void bli_sscal2v_hwacha
 			__asm__ volatile ("vmca va3,  %0" : : "r" (incy*sizeof(float)));
 			for ( dim_t i = n; i > 0;)
 			{
+            			MEMTOUCH(y+offset*incy, float, vlen_result*incy);
+            			MEMTOUCH(x+offset*incx, float, vlen_result*incx);
 				__asm__ volatile ("vmca va0,  %0" : : "r" (x+offset*incx));
 				__asm__ volatile ("vmca va1,  %0" : : "r" (y+offset*incy));
 				vf(&bli_sscal2v_stride_hwacha_vf_main);
@@ -224,4 +240,5 @@ void bli_sscal2v_hwacha
 			}
 		}
 	}
+	__asm__ volatile ("fence" ::: "memory");
 }

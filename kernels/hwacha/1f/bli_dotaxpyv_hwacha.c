@@ -73,6 +73,9 @@ void bli_sdotaxpyv_hwacha
 	{
 		for ( dim_t i = n; i > 0;)
 		{
+            		MEMTOUCH(y+offset, float, vlen_result);
+            		MEMTOUCH(x+offset, float, vlen_result);
+            		MEMTOUCH(z+offset, float, vlen_result);
 			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
 			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
 			__asm__ volatile ("vmca va6,  %0" : : "r" (z+offset));
@@ -89,6 +92,9 @@ void bli_sdotaxpyv_hwacha
 		__asm__ volatile ("vmca va7,  %0" : : "r" (incx*sizeof(float)));
 		for ( dim_t i = n; i > 0;)
 		{
+            		MEMTOUCH(y+offset*incy, float, vlen_result*incy);
+            		MEMTOUCH(x+offset*incx, float, vlen_result*incx);
+            		MEMTOUCH(z+offset*incz, float, vlen_result*incz);
 			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset*incy));
 			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset*incx));
 			__asm__ volatile ("vmca va6,  %0" : : "r" (z+offset*incz));

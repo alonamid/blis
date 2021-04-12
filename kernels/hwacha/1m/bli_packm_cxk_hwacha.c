@@ -247,6 +247,7 @@ void bli_spackm_hwacha_cxk
       bli_sset0s_mxn( m_edge, n_edge, p_edge, 1, ldp);
     }
   }
-
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
   __asm__ volatile ("fence" ::: "memory");
+#endif
 }

@@ -375,6 +375,7 @@ void bli_strsm_u_hwacha_16xn
         __asm__ volatile ("vmcs vs16,  %0" : : "r" (*(a11 + (0  )*rs_a + (1   )*cs_a)));
         vf(&bli_strsm_hwacha_16xn_vf_inner_15);
 
+	__asm__ volatile ("fence" ::: "memory");
 /*
         printf("===TRSM Microkernel Result C====\n");
         for (int ii=0; ii<mr; ii++) {
@@ -384,6 +385,5 @@ void bli_strsm_u_hwacha_16xn
           printf("\n");
         }
 */
-
 }
 

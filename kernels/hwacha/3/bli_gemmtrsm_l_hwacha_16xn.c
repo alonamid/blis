@@ -485,4 +485,5 @@ void bli_sgemmtrsm_l_hwacha_16xn
         __asm__ volatile ("vmcs vs16,  %0" : : "r" (*(a11 + (15  )*rs_a + (14  )*cs_a)));
         vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_15);
 
+	__asm__ volatile ("fence" ::: "memory");
 }

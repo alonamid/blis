@@ -62,6 +62,7 @@ void bli_sdotxf_hwacha
 	  __asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (b_n));
 	  for ( dim_t i = b_n; i > 0;) {
 
+            	MEMTOUCH(y+offset, float, vlen_result);
                 __asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
 		/* If beta is zero, clear y. Otherwise, scale by beta. */
 		if (  *beta == 0 )
@@ -86,6 +87,7 @@ void bli_sdotxf_hwacha
 
 		for ( dim_t p = 0; p < m; ++p )
 		{
+            		MEMTOUCH(a+p+offset*lda, float, vlen_result*lda);
                 	__asm__ volatile ("vmca va1,  %0" : : "r" (a + p + offset*lda));
                 	__asm__ volatile ("vmca va2,  %0" : : "r" (lda*sizeof(float)));
                 	__asm__ volatile ("vmcs vs2,  %0" : : "r" (x[p]));

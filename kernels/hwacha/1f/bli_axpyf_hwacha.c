@@ -61,11 +61,13 @@ void bli_saxpyf_hwacha
 	  __asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (m));
 	  for ( dim_t i = m; i > 0;) {
 
+            	MEMTOUCH(y+offset, float, vlen_result);
                 __asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
 		vf(&bli_saxpyf_hwacha_vf_init);
 
 		for ( dim_t j = 0; j < b_n; ++j )
 		{
+            		MEMTOUCH(a+offset+j*lda, float, vlen_result);
                 	__asm__ volatile ("vmca va1,  %0" : : "r" (a + offset + j*lda));
                 	__asm__ volatile ("vmcs vs1,  %0" : : "r" (x[j]));
 			vf(&bli_saxpyf_hwacha_vf_main);
