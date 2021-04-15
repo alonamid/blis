@@ -50,6 +50,22 @@ extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_12(void) __attribute__((visibil
 extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_13(void) __attribute__((visibility("protected")));
 extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_14(void) __attribute__((visibility("protected")));
 extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_15(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_0(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_1(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_2(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_3(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_4(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_5(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_6(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_7(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_8(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_9(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_10(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_11(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_12(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_13(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_14(void) __attribute__((visibility("protected")));
+extern void bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_15(void) __attribute__((visibility("protected")));
 
 extern void bli_sgemm_hwacha_16xn_vf_init_beta(void) __attribute__((visibility("protected")));
 extern void bli_sgemm_hwacha_16xn_vf_tail(void) __attribute__((visibility("protected")));
@@ -285,205 +301,415 @@ void bli_sgemmtrsm_l_hwacha_16xn
 
         /* reference: http://developer.amd.com/wordpress/media/2013/12/Optimization-of-BLIS-Library-for-AMD-ZEN.pdf */
 
-        /* b_0 */
-        /* alpha_00 */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_0);
+	if (cs_c != 1)
+	{
+          /* b_0 */
+          /* alpha_00 */
+          __asm__ volatile ("vmca va31,  %0" : : "r" (cs_c*sizeof(float)));
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11)));
+          
+	  vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_0);
+  
+          __asm__ volatile ("vmca va0,  %0" : : "r" (cs_c*sizeof(float)));
+          __asm__ volatile ("vmca va31, %0" : : "r" (c11+15*rs_c));
 
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (1  )*rs_a + (1  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (1  )*rs_a + (0  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_1);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (2  )*rs_a + (2  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (2  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (2  )*rs_a + (1  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_2);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (3  )*rs_a + (3  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (3  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (3  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (3  )*rs_a + (2  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_3);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (4  )*rs_a + (4  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (4  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (4  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (4  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (4  )*rs_a + (3  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_4);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (5  )*rs_a + (5  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (5  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (5  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (5  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (5  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (5  )*rs_a + (4  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_5);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (6  )*rs_a + (6  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (6  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (6  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (6  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (6  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (6  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (6  )*rs_a + (5  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_6);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (7  )*rs_a + (7  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (7  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (7  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (7  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (7  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (7  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (7  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 + (7  )*rs_a + (6  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_7);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (8  )*rs_a + (8  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (8  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (8  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (8  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (8  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (8  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (8  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 + (8  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 + (8  )*rs_a + (7  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_8);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (9  )*rs_a + (9  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (9  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (9  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (9  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (9  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (9  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (9  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (9  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (9  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (9  )*rs_a + (8  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_9);
-       
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (10  )*rs_a + (10  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (10  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (10  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (10  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (10  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (10  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (10  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (10  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (10  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (10  )*rs_a + (8  )*cs_a)));
-        __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (10  )*rs_a + (9  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_10);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (11  )*rs_a + (11  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (11  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (11  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (11  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (11  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (11  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (11  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (11  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (11  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (11  )*rs_a + (8  )*cs_a)));
-        __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (11  )*rs_a + (9  )*cs_a)));
-        __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (11  )*rs_a + (10  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_11);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (12  )*rs_a + (12  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (12  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (12  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (12  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (12  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (12  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (12  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (12  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (12  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (12  )*rs_a + (8  )*cs_a)));
-        __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (12  )*rs_a + (9  )*cs_a)));
-        __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (12  )*rs_a + (10  )*cs_a)));
-        __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (12  )*rs_a + (11  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_12);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (13  )*rs_a + (13  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (13  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (13  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (13  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (13  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (13  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (13  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (13  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (13  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (13  )*rs_a + (8  )*cs_a)));
-        __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (13  )*rs_a + (9  )*cs_a)));
-        __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (13  )*rs_a + (10  )*cs_a)));
-        __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (13  )*rs_a + (11  )*cs_a)));
-        __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (13  )*rs_a + (12  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_13);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (14  )*rs_a + (14  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (14  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (14  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (14  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (14  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (14  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (14  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (14  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (14  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (14  )*rs_a + (8  )*cs_a)));
-        __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (14  )*rs_a + (9  )*cs_a)));
-        __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (14  )*rs_a + (10  )*cs_a)));
-        __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (14  )*rs_a + (11  )*cs_a)));
-        __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (14  )*rs_a + (12  )*cs_a)));
-        __asm__ volatile ("vmcs vs15,  %0" : : "r" (*(a11 + (14  )*rs_a + (13  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_14);
-
-        /* alpha_ii */
-        __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (15  )*rs_a + (15  )*cs_a)));
-        /* alpha_ik */
-        __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (15  )*rs_a + (0  )*cs_a)));
-        __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (15  )*rs_a + (1  )*cs_a)));
-        __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (15  )*rs_a + (2  )*cs_a)));
-        __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (15  )*rs_a + (3  )*cs_a)));
-        __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (15  )*rs_a + (4  )*cs_a)));
-        __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (15  )*rs_a + (5  )*cs_a)));
-        __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (15  )*rs_a + (6  )*cs_a)));
-        __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (15  )*rs_a + (7  )*cs_a)));
-        __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (15  )*rs_a + (8  )*cs_a)));
-        __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (15  )*rs_a + (9  )*cs_a)));
-        __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (15  )*rs_a + (10  )*cs_a)));
-        __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (15  )*rs_a + (11  )*cs_a)));
-        __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (15  )*rs_a + (12  )*cs_a)));
-        __asm__ volatile ("vmcs vs15,  %0" : : "r" (*(a11 + (15  )*rs_a + (13  )*cs_a)));
-        __asm__ volatile ("vmcs vs16,  %0" : : "r" (*(a11 + (15  )*rs_a + (14  )*cs_a)));
-        vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_15);
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (1  )*rs_a + (1  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (1  )*rs_a + (0  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_1);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (2  )*rs_a + (2  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (2  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (2  )*rs_a + (1  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_2);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (3  )*rs_a + (3  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (3  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (3  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (3  )*rs_a + (2  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_3);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (4  )*rs_a + (4  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (4  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (4  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (4  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (4  )*rs_a + (3  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_4);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (5  )*rs_a + (5  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (5  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (5  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (5  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (5  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (5  )*rs_a + (4  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_5);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (6  )*rs_a + (6  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (6  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (6  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (6  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (6  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (6  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (6  )*rs_a + (5  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_6);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (7  )*rs_a + (7  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (7  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (7  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (7  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (7  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (7  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (7  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 + (7  )*rs_a + (6  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_7);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (8  )*rs_a + (8  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (8  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (8  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (8  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (8  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (8  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (8  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 + (8  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 + (8  )*rs_a + (7  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_8);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (9  )*rs_a + (9  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (9  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (9  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (9  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (9  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (9  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (9  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (9  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (9  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (9  )*rs_a + (8  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_9);
+         
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (10  )*rs_a + (10  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (10  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (10  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (10  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (10  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (10  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (10  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (10  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (10  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (10  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (10  )*rs_a + (9  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_10);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (11  )*rs_a + (11  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (11  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (11  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (11  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (11  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (11  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (11  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (11  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (11  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (11  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (11  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (11  )*rs_a + (10  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_11);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (12  )*rs_a + (12  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (12  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (12  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (12  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (12  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (12  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (12  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (12  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (12  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (12  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (12  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (12  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (12  )*rs_a + (11  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_12);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (13  )*rs_a + (13  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (13  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (13  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (13  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (13  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (13  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (13  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (13  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (13  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (13  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (13  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (13  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (13  )*rs_a + (11  )*cs_a)));
+          __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (13  )*rs_a + (12  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_13);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (14  )*rs_a + (14  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (14  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (14  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (14  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (14  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (14  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (14  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (14  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (14  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (14  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (14  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (14  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (14  )*rs_a + (11  )*cs_a)));
+          __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (14  )*rs_a + (12  )*cs_a)));
+          __asm__ volatile ("vmcs vs15,  %0" : : "r" (*(a11 + (14  )*rs_a + (13  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_14);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (15  )*rs_a + (15  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (15  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (15  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (15  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (15  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (15  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (15  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (15  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (15  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (15  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (15  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (15  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (15  )*rs_a + (11  )*cs_a)));
+          __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (15  )*rs_a + (12  )*cs_a)));
+          __asm__ volatile ("vmcs vs15,  %0" : : "r" (*(a11 + (15  )*rs_a + (13  )*cs_a)));
+          __asm__ volatile ("vmcs vs16,  %0" : : "r" (*(a11 + (15  )*rs_a + (14  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_15);
+	}
+	else
+	{
+          /* b_0 */
+          /* alpha_00 */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_0);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (1  )*rs_a + (1  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (1  )*rs_a + (0  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_1);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (2  )*rs_a + (2  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (2  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (2  )*rs_a + (1  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_2);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (3  )*rs_a + (3  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (3  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (3  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (3  )*rs_a + (2  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_3);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (4  )*rs_a + (4  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (4  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (4  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (4  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (4  )*rs_a + (3  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_4);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (5  )*rs_a + (5  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (5  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (5  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (5  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (5  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (5  )*rs_a + (4  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_5);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (6  )*rs_a + (6  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (6  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (6  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (6  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (6  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (6  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (6  )*rs_a + (5  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_6);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (7  )*rs_a + (7  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (7  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (7  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (7  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (7  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (7  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (7  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 + (7  )*rs_a + (6  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_7);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (8  )*rs_a + (8  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 + (8  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 + (8  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 + (8  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 + (8  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 + (8  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 + (8  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 + (8  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 + (8  )*rs_a + (7  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_8);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (9  )*rs_a + (9  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (9  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (9  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (9  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (9  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (9  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (9  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (9  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (9  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (9  )*rs_a + (8  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_9);
+         
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (10  )*rs_a + (10  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (10  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (10  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (10  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (10  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (10  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (10  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (10  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (10  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (10  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (10  )*rs_a + (9  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_10);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (11  )*rs_a + (11  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (11  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (11  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (11  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (11  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (11  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (11  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (11  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (11  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (11  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (11  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (11  )*rs_a + (10  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_11);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (12  )*rs_a + (12  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (12  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (12  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (12  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (12  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (12  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (12  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (12  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (12  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (12  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (12  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (12  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (12  )*rs_a + (11  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_12);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (13  )*rs_a + (13  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (13  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (13  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (13  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (13  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (13  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (13  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (13  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (13  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (13  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (13  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (13  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (13  )*rs_a + (11  )*cs_a)));
+          __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (13  )*rs_a + (12  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_13);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (14  )*rs_a + (14  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (14  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (14  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (14  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (14  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (14  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (14  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (14  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (14  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (14  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (14  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (14  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (14  )*rs_a + (11  )*cs_a)));
+          __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (14  )*rs_a + (12  )*cs_a)));
+          __asm__ volatile ("vmcs vs15,  %0" : : "r" (*(a11 + (14  )*rs_a + (13  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_14);
+  
+          /* alpha_ii */
+          __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 +  (15  )*rs_a + (15  )*cs_a)));
+          /* alpha_ik */
+          __asm__ volatile ("vmcs vs2,  %0" : : "r" (*(a11 +  (15  )*rs_a + (0  )*cs_a)));
+          __asm__ volatile ("vmcs vs3,  %0" : : "r" (*(a11 +  (15  )*rs_a + (1  )*cs_a)));
+          __asm__ volatile ("vmcs vs4,  %0" : : "r" (*(a11 +  (15  )*rs_a + (2  )*cs_a)));
+          __asm__ volatile ("vmcs vs5,  %0" : : "r" (*(a11 +  (15  )*rs_a + (3  )*cs_a)));
+          __asm__ volatile ("vmcs vs6,  %0" : : "r" (*(a11 +  (15  )*rs_a + (4  )*cs_a)));
+          __asm__ volatile ("vmcs vs7,  %0" : : "r" (*(a11 +  (15  )*rs_a + (5  )*cs_a)));
+          __asm__ volatile ("vmcs vs8,  %0" : : "r" (*(a11 +  (15  )*rs_a + (6  )*cs_a)));
+          __asm__ volatile ("vmcs vs9,  %0" : : "r" (*(a11 +  (15  )*rs_a + (7  )*cs_a)));
+          __asm__ volatile ("vmcs vs10,  %0" : : "r" (*(a11 + (15  )*rs_a + (8  )*cs_a)));
+          __asm__ volatile ("vmcs vs11,  %0" : : "r" (*(a11 + (15  )*rs_a + (9  )*cs_a)));
+          __asm__ volatile ("vmcs vs12,  %0" : : "r" (*(a11 + (15  )*rs_a + (10  )*cs_a)));
+          __asm__ volatile ("vmcs vs13,  %0" : : "r" (*(a11 + (15  )*rs_a + (11  )*cs_a)));
+          __asm__ volatile ("vmcs vs14,  %0" : : "r" (*(a11 + (15  )*rs_a + (12  )*cs_a)));
+          __asm__ volatile ("vmcs vs15,  %0" : : "r" (*(a11 + (15  )*rs_a + (13  )*cs_a)));
+          __asm__ volatile ("vmcs vs16,  %0" : : "r" (*(a11 + (15  )*rs_a + (14  )*cs_a)));
+          vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_15);
+	}
 
 	__asm__ volatile ("fence" ::: "memory");
 }
