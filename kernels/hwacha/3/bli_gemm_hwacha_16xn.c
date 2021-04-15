@@ -188,8 +188,8 @@ void bli_sgemm_hwacha_16xn
                 // load beta
                 __asm__ volatile ("vmcs vs63,  %0" : : "r" (*beta));
 		//vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
-		if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_init_beta);
-		else vf(&bli_sgemm_hwacha_16xn_vf_init_beta_cmajor);
+		if (cs_c0 == 1) { vf(&bli_sgemm_hwacha_16xn_vf_init_beta); }
+		else { vf(&bli_sgemm_hwacha_16xn_vf_init_beta_cmajor); }
 	 } else {
 		vf(&bli_sgemm_hwacha_16xn_vf_init);
 	 }
@@ -306,8 +306,8 @@ void bli_sgemm_hwacha_16xn
           }
 
           //vf(&bli_sgemm_hwacha_16xn_vf_end);
-          if (cs_c0 == 1) vf(&bli_sgemm_hwacha_16xn_vf_end);
-          else vf(&bli_sgemm_hwacha_16xn_vf_end_cmajor);
+          if (cs_c0 == 1) { vf(&bli_sgemm_hwacha_16xn_vf_end); }
+          else { vf(&bli_sgemm_hwacha_16xn_vf_end_cmajor); }
 
 	  __asm__ volatile ("fence" ::: "memory");
 
