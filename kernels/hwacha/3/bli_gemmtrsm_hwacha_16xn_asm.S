@@ -102,9 +102,9 @@ bli_sgemmtrsm_u_hwacha_16xn_vf_inner_0:
 	.global bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_0
 bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_0:
         vpset vp0
-	vfmul.s vv0, vv0, vs1
-	vsstw vv0, va0, va31
-	OP vsw vv0,, va,%(MR)
+	OP vfmul.s vv0,, vv0,, vs1,,
+	OP vsw vv0,, va0,,
+	OP vsstw vv0,, va,%(MR), va31
         vstop
 
 	.align 3
@@ -112,8 +112,8 @@ bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_0:
 bli_sgemmtrsm_u_hwacha_16xn_vf_inner_cmajor_0:
         vpset vp0
 	OP vfmul.s vv,%(MR-1), vv,%(MR-1), vs1,,
-	OP vsstw vv, %(MR-1), va, %(MR-1), va31
-	OP vsw vv,%(MR-1), va,%(MR)
+	OP vsw vv, %(MR-1), va, %(MR-1),,
+	OP vsstw vv,%(MR-1), va,%(MR), va31,,
         vstop
 
 	.align 3

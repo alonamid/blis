@@ -280,29 +280,29 @@ void bli_sgemmtrsm_l_hwacha_16xn
           vf(&bli_sgemm_hwacha_16xn_vf_tail);
         }
 
-        /* vv16-31 are C11 rows */
-        // C11 rows addresses
-        __asm__ volatile ("vmca va16,  %0" : : "r" (c11+0*rs_c));
-        __asm__ volatile ("vmca va17,  %0" : : "r" (c11+1*rs_c));
-        __asm__ volatile ("vmca va18,  %0" : : "r" (c11+2*rs_c));
-        __asm__ volatile ("vmca va19,  %0" : : "r" (c11+3*rs_c));
-        __asm__ volatile ("vmca va20,  %0" : : "r" (c11+4*rs_c));
-        __asm__ volatile ("vmca va21,  %0" : : "r" (c11+5*rs_c));
-        __asm__ volatile ("vmca va22,  %0" : : "r" (c11+6*rs_c));
-        __asm__ volatile ("vmca va23,  %0" : : "r" (c11+7*rs_c));
-        __asm__ volatile ("vmca va24,  %0" : : "r" (c11+8*rs_c));
-        __asm__ volatile ("vmca va25,  %0" : : "r" (c11+9*rs_c));
-        __asm__ volatile ("vmca va26, %0" : : "r" (c11+10*rs_c));
-        __asm__ volatile ("vmca va27, %0" : : "r" (c11+11*rs_c));
-        __asm__ volatile ("vmca va28, %0" : : "r" (c11+12*rs_c));
-        __asm__ volatile ("vmca va29, %0" : : "r" (c11+13*rs_c));
-        __asm__ volatile ("vmca va30, %0" : : "r" (c11+14*rs_c));
-        __asm__ volatile ("vmca va31, %0" : : "r" (c11+15*rs_c));
-
         /* reference: http://developer.amd.com/wordpress/media/2013/12/Optimization-of-BLIS-Library-for-AMD-ZEN.pdf */
 
 	if (cs_c != 1)
 	{
+          /* vv16-31 are C11 rows */
+          // C11 rows addresses
+          __asm__ volatile ("vmca va16,  %0" : : "r" (c11+0));
+          __asm__ volatile ("vmca va17,  %0" : : "r" (c11+1));
+          __asm__ volatile ("vmca va18,  %0" : : "r" (c11+2));
+          __asm__ volatile ("vmca va19,  %0" : : "r" (c11+3));
+          __asm__ volatile ("vmca va20,  %0" : : "r" (c11+4));
+          __asm__ volatile ("vmca va21,  %0" : : "r" (c11+5));
+          __asm__ volatile ("vmca va22,  %0" : : "r" (c11+6));
+          __asm__ volatile ("vmca va23,  %0" : : "r" (c11+7));
+          __asm__ volatile ("vmca va24,  %0" : : "r" (c11+8));
+          __asm__ volatile ("vmca va25,  %0" : : "r" (c11+9));
+          __asm__ volatile ("vmca va26, %0" : : "r" (c11+10));
+          __asm__ volatile ("vmca va27, %0" : : "r" (c11+11));
+          __asm__ volatile ("vmca va28, %0" : : "r" (c11+12));
+          __asm__ volatile ("vmca va29, %0" : : "r" (c11+13));
+          __asm__ volatile ("vmca va30, %0" : : "r" (c11+14));
+          __asm__ volatile ("vmca va31, %0" : : "r" (c11+15));
+
           /* b_0 */
           /* alpha_00 */
           __asm__ volatile ("vmca va31,  %0" : : "r" (cs_c*sizeof(float)));
@@ -311,7 +311,7 @@ void bli_sgemmtrsm_l_hwacha_16xn
 	  vf(&bli_sgemmtrsm_l_hwacha_16xn_vf_inner_cmajor_0);
   
           __asm__ volatile ("vmca va0,  %0" : : "r" (cs_c*sizeof(float)));
-          __asm__ volatile ("vmca va31, %0" : : "r" (c11+15*rs_c));
+          __asm__ volatile ("vmca va31, %0" : : "r" (c11+15));
 
           /* alpha_ii */
           __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11 + (1  )*rs_a + (1  )*cs_a)));
@@ -510,6 +510,25 @@ void bli_sgemmtrsm_l_hwacha_16xn
 	}
 	else
 	{
+          /* vv16-31 are C11 rows */
+          // C11 rows addresses
+          __asm__ volatile ("vmca va16,  %0" : : "r" (c11+0*rs_c));
+          __asm__ volatile ("vmca va17,  %0" : : "r" (c11+1*rs_c));
+          __asm__ volatile ("vmca va18,  %0" : : "r" (c11+2*rs_c));
+          __asm__ volatile ("vmca va19,  %0" : : "r" (c11+3*rs_c));
+          __asm__ volatile ("vmca va20,  %0" : : "r" (c11+4*rs_c));
+          __asm__ volatile ("vmca va21,  %0" : : "r" (c11+5*rs_c));
+          __asm__ volatile ("vmca va22,  %0" : : "r" (c11+6*rs_c));
+          __asm__ volatile ("vmca va23,  %0" : : "r" (c11+7*rs_c));
+          __asm__ volatile ("vmca va24,  %0" : : "r" (c11+8*rs_c));
+          __asm__ volatile ("vmca va25,  %0" : : "r" (c11+9*rs_c));
+          __asm__ volatile ("vmca va26, %0" : : "r" (c11+10*rs_c));
+          __asm__ volatile ("vmca va27, %0" : : "r" (c11+11*rs_c));
+          __asm__ volatile ("vmca va28, %0" : : "r" (c11+12*rs_c));
+          __asm__ volatile ("vmca va29, %0" : : "r" (c11+13*rs_c));
+          __asm__ volatile ("vmca va30, %0" : : "r" (c11+14*rs_c));
+          __asm__ volatile ("vmca va31, %0" : : "r" (c11+15*rs_c));
+
           /* b_0 */
           /* alpha_00 */
           __asm__ volatile ("vmcs vs1,  %0" : : "r" (*(a11)));
