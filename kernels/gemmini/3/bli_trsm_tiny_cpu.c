@@ -1428,6 +1428,7 @@ static err_t bli_strsm_small_AlXB_unitDiag(
 * Here the output X is stored in B
 * The custom-kernel will be called only when M*(M+N)* sizeof(Matrix Elements) < L3 cache
 */
+#if defined(BLIS_CONFIG_GEMMINI)
 err_t bli_trsm_small
      (
        side_t  side,
@@ -1631,5 +1632,6 @@ err_t bli_trsm_small
     }
     return BLIS_NOT_YET_IMPLEMENTED;
 };
+#endif //BLIS_CONFIG_GEMMINI
 
 #endif

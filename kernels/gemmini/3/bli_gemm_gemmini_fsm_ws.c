@@ -184,6 +184,7 @@ void bli_sgemm_gemmini_fsm_ws
         const size_t padding_J = dim_J_padded - nr;
 
 
+	int weightA = 1;
         scale_t A_scale_factor = *alpha;
         scale_t B_scale_factor = 1.f;
         scale_acc_t D_scale_factor = *beta;
@@ -295,7 +296,9 @@ void bli_sgemm_gemmini_fsm_ws
                           last_tile ? C_dram_addr : NULL,
                           A_row_stride, B_row_stride, D_row_stride, C_row_stride,
                           true, false,
-                          !elem_out, elem_out, !(K0 == 0) || !no_bias);
+                          !elem_out, elem_out, !(K0 == 0) || !no_bias,
+                          weightA
+                          );
 
         }
 

@@ -50,36 +50,65 @@ void bli_cntx_init_gemminihwacha( cntx_t* cntx )
           exit(1);
         }
 
+        //bool relaxed_numerics = false;
+        bool relaxed_numerics = true; //temporarily true for rapid testing
+        const char* relaxed_numeric_env = getenv("BLIS_RELAXED_NUMERICS");
+        if (relaxed_numeric_env != NULL)
+        {
+          relaxed_numerics = true;
+        }
+
 	// Set default kernel blocksizes and functions.
 	bli_cntx_init_gemminihwacha_ref( cntx );
 
 	// -------------------------------------------------------------------------
 
-	// Update the context with optimized native gemm micro-kernels and
-	// their storage preferences.
-	bli_cntx_set_l3_nat_ukrs
-	(
-	  5,
-	  // gemm
-	  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_fsm_ws,            TRUE,
-	  //trsm
-	  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_gemmini_small,             TRUE,
-	  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_gemmini_small,             TRUE,
-	  //gemmtrsm
-	  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_fsm_ws,      TRUE,
-	  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_fsm_ws,      TRUE,
-	  cntx
-	);
+
+        if (relaxed_numerics)
+	{
+		// Update the context with optimized native gemm micro-kernels and
+		// their storage preferences.
+		bli_cntx_set_l3_nat_ukrs
+		(
+		  5,
+		  // gemm
+		  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_gemmini_fsm_ws,            TRUE,
+		  //trsm
+		  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_gemmini_small,             TRUE,
+		  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_gemmini_small,             TRUE,
+		  //gemmtrsm
+		  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_gemmini_fsm_ws,      TRUE,
+		  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_gemmini_fsm_ws,      TRUE,
+		  cntx
+		);
+	}
+	else
+	{
+		bli_cntx_set_l3_nat_ukrs
+		(
+		  //0,
+		  5,
+		  // gemm
+		  BLIS_GEMM_UKR,       BLIS_FLOAT,    bli_sgemm_hwacha_16xn,       TRUE,
+	          // trsm
+		  BLIS_TRSM_L_UKR,     BLIS_FLOAT,    bli_strsm_l_hwacha_16xn,     TRUE,
+		  BLIS_TRSM_U_UKR,     BLIS_FLOAT,    bli_strsm_u_hwacha_16xn,     TRUE,
+	          // gemmtrsm
+		  BLIS_GEMMTRSM_L_UKR, BLIS_FLOAT,    bli_sgemmtrsm_l_hwacha_16xn, TRUE,
+		  BLIS_GEMMTRSM_U_UKR, BLIS_FLOAT,    bli_sgemmtrsm_u_hwacha_16xn, TRUE,
+		  cntx
+		);
+	}
 
 	// Update the context with optimized level-1f kernels.
 	bli_cntx_set_l1f_kers
 	(
-	  //0,
-	  4,
-	  BLIS_DOTXF_KER,  BLIS_FLOAT, bli_sdotxf_hwacha,
-	  BLIS_AXPYF_KER,  BLIS_FLOAT, bli_saxpyf_hwacha,
-	  BLIS_AXPY2V_KER,  BLIS_FLOAT, bli_saxpy2v_hwacha,
-	  BLIS_DOTAXPYV_KER,  BLIS_FLOAT, bli_sdotaxpyv_hwacha,
+	  0,
+	  //4,
+	  //BLIS_DOTXF_KER,  BLIS_FLOAT, bli_sdotxf_hwacha,
+	  //BLIS_AXPYF_KER,  BLIS_FLOAT, bli_saxpyf_hwacha,
+	  //BLIS_AXPY2V_KER,  BLIS_FLOAT, bli_saxpy2v_hwacha,
+	  //BLIS_DOTAXPYV_KER,  BLIS_FLOAT, bli_sdotaxpyv_hwacha,
 	  cntx
 	);
 
@@ -121,7 +150,7 @@ void bli_cntx_init_gemminihwacha( cntx_t* cntx )
         bli_cntx_set_packm_kers
         (
           //0,
-          3,
+          4,
           //BLIS_PACKM_4XK_KER,   BLIS_FLOAT, bli_spackm_gemmini_4xk,
           //BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_32xk,
           //BLIS_PACKM_88XK_KER,  BLIS_FLOAT, bli_spackm_gemmini_88xk,
@@ -130,6 +159,7 @@ void bli_cntx_init_gemminihwacha( cntx_t* cntx )
           //hwacha based packing
           BLIS_PACKM_4XK_KER,   BLIS_FLOAT, bli_spackm_hwacha_cxk,
           BLIS_PACKM_32XK_KER,  BLIS_FLOAT, bli_spackm_hwacha_cxk,
+          BLIS_PACKM_64XK_KER,  BLIS_FLOAT, bli_spackm_hwacha_cxk,
           DIM*max_tile_i_j,  BLIS_FLOAT, bli_spackm_hwacha_cxk,
           cntx
         );
@@ -141,21 +171,21 @@ void bli_cntx_init_gemminihwacha( cntx_t* cntx )
 	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
         // WS
-	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM*max_tile_i_j,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM*max_tile_i_j,     0,     0,     0 );
-	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         64,     0,     0,     0 );
-	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         64,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM*max_tile_i_j,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM*max_tile_i_j,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_MR ],         64,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NR ],         64,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_MR ],         DIM,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_NR ],         DIM,     0,     0,     0 );
 
         //cache blocking (scratchpad size)
         //TODO (Alon): Consider blocking based on L2 size rather than scratchpad size?
-	bli_blksz_init_easy( &blkszs[ BLIS_MC ],DIM*max_tile_i_j,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_KC ],4*DIM*max_tile_k,     0,     0,     0 );
-	bli_blksz_init_easy( &blkszs[ BLIS_NC ],4*max_tile_l2,     0,     0,     0 );
-	//bli_blksz_init_easy( &blkszs[ BLIS_MC ],64,     0,     0,     0 );
+	//bli_blksz_init_easy( &blkszs[ BLIS_MC ],DIM*max_tile_i_j,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_KC ],4*DIM*max_tile_k,     0,     0,     0 );
 	//bli_blksz_init_easy( &blkszs[ BLIS_NC ],4*max_tile_l2,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_MC ],64,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_KC ],4*DIM*max_tile_k,     0,     0,     0 );
+	bli_blksz_init_easy( &blkszs[ BLIS_NC ],4*max_tile_l2,     0,     0,     0 );
 
 	// level-1f
 	//bli_blksz_init_easy( &blkszs[ BLIS_AF ],         0,     0,     0,     0 );

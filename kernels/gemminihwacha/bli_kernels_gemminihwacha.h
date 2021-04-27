@@ -69,7 +69,7 @@ PACKM_KER_PROT( float,   s, packm_hwacha_cxk )
 
 // -- level-3 --
 
-// gemm (asm d12x6)
+// gemmini
 TRSM_UKR_PROT( float,   s, trsm_u_gemmini_small )
 TRSM_UKR_PROT( float,   s, trsm_l_gemmini_small )
 GEMM_UKR_PROT( float,   s, gemm_gemmini_fsm_ws )
@@ -81,3 +81,11 @@ GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_os )
 GEMM_UKR_PROT( float,   s, gemm_gemmini_small_ws )
 GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_gemmini_small_ws )
 GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_gemmini_small_ws )
+
+// hwacha
+GEMM_UKR_PROT( float,   s, gemm_hwacha_16xn )
+TRSM_UKR_PROT( float,   s, trsm_l_hwacha_16xn )
+TRSM_UKR_PROT( float,   s, trsm_u_hwacha_16xn )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_l_hwacha_16xn )
+GEMMTRSM_UKR_PROT( float,   s, gemmtrsm_u_hwacha_16xn )
+

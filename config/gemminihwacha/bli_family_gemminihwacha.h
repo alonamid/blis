@@ -75,6 +75,7 @@
         t = tf[0];                                                      \
         tf[0] = t;                                                      \
       }                                                                 \
+      __asm__ __volatile__ ("fence" ::: "memory"); \
     })
 
 
