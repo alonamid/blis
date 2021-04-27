@@ -264,7 +264,7 @@ print_usage()
 	echo "                 \"small\" depends on thresholds that may vary by sub-"
 	echo "                 configuration."
 	echo " "
-	echo "   -s NAME --enable-sandbox=NAME"
+	echo "   -s NAME, --enable-sandbox=NAME"
 	echo " "
 	echo "                 Enable a separate sandbox implementation of gemm. This"
 	echo "                 option disables BLIS's conventional gemm implementation"
