@@ -50,6 +50,23 @@ void bli_saddv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_saddv_gemminihwacha_ref
+#else
+		bli_saddv_hwacha_ref
+#endif
+		(
+			conjx,
+			n,
+			x, incx,
+			y, incy,
+			cntx
+		);
+		return;
+	}
+
 	dim_t offset = 0;
 	__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 2, 0, 1)));
 	int vlen_result;

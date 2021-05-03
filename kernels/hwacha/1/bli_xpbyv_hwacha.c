@@ -51,6 +51,24 @@ void bli_sxpbyv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_sxpbyv_gemminihwacha_ref
+#else
+		bli_sxpbyv_hwacha_ref
+#endif
+		(
+			conjx,
+			n,
+			x, incx,
+			beta,
+			y, incy,
+			cntx
+		);
+		return;
+	}
+
 	/* If beta is zero, use copyv. */
 	if ( *beta == 0 )
 	{

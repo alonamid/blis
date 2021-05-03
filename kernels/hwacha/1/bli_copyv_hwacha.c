@@ -51,6 +51,23 @@ void bli_scopyv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_scopyv_lowprec
+#else
+		bli_scopyv_hwacha_ref
+#endif
+		(
+			conjx,
+			n,
+			x, incx,
+			y, incy,
+			cntx
+		);
+		return;
+	}
+
 	dim_t offset = 0;
 	if (bli_cntx_lowprec_in_use(cntx) && bli_cntx_lowprec_elem_out(cntx))
 	{

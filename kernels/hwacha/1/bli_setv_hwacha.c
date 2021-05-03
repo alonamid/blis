@@ -51,6 +51,23 @@ void bli_ssetv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_ssetv_lowprec
+#else
+		bli_ssetv_hwacha_ref
+#endif
+		(
+			conjalpha,
+			n,
+			alpha,
+			x, incx,
+			cntx
+		);
+		return;
+	}
+
 	dim_t offset = 0;
 	if (bli_cntx_lowprec_in_use(cntx))
 	{

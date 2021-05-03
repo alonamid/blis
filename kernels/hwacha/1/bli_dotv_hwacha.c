@@ -58,6 +58,25 @@ void bli_sdotv_hwacha
 		return;
 	}
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_sdotv_gemminihwacha_ref
+#else
+		bli_sdotv_hwacha_ref
+#endif
+		(
+			conjx,
+			conjy,
+			n,
+			x, incx,
+			y, incy,
+			rho,
+			cntx
+		);
+		return;
+	}
+
 	dim_t offset = 0;
 	__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 3, 0, 1)));
 	int vlen_result;

@@ -51,6 +51,24 @@ void bli_saxpyv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_saxpyv_gemminihwacha_ref
+#else
+		bli_saxpyv_hwacha_ref
+#endif
+		(
+			conjx,
+			n,
+			alpha,
+			x, incx,
+			y, incy,
+			cntx
+		);
+		return;
+	}
+
 	/* If alpha is zero, return. */
 	if ( *alpha == 0 ) return;
 

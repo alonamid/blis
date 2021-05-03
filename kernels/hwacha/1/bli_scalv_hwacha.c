@@ -52,6 +52,23 @@ void bli_sscalv_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_sscalv_lowprec
+#else
+		bli_sscalv_hwacha_ref
+#endif
+		(
+			conjalpha,
+			n,
+			alpha,
+			x, incx,
+			cntx
+		);
+		return;
+	}
+
 	/* If alpha is one, return. */
 	if ( bli_seq1( *alpha ) ) return;
 

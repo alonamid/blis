@@ -57,6 +57,24 @@ void bli_sscal2v_hwacha
 {
 	if ( bli_zero_dim1( n ) ) return;
 
+	if (n < HWACHA_MIN_DIM)
+	{
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+		bli_sscal2v_lowprec
+#else
+		bli_sscal2v_hwacha_ref
+#endif
+		(
+			conjalpha,
+			n,
+			alpha,
+			x, incx,
+			y, incy,
+			cntx
+		);
+		return;
+	}
+
 	/* If alpha is zero, use setv. */
 	if ( bli_seq0( *alpha ) )
 	{
