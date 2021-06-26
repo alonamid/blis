@@ -53,10 +53,13 @@
   (((nvvh) & 0x1ff) << 23) | \
   (VRU_SWITCH))
 
+//#define vf(p) \
+//        __asm__ __volatile__ ("fence" ::: "memory"); \
+//        __asm__ __volatile__ ("vf (%0)" : : "r" (p));
 #define vf(p) \
-        __asm__ __volatile__ ("vf (%0)" : : "r" (p))
+        __asm__ __volatile__ ("vf (%0)" : : "r" (p));
 
-#define HWACHA_MIN_DIM 8
+#define HWACHA_MIN_DIM 32
 #define SMAXVL 2048
 
 
@@ -73,7 +76,7 @@
         t = tf[0];                                                      \
         tf[0] = t;                                                      \
       }                                                                 \
-      __asm__ volatile ("fence" ::: "memory");                          \
+      __asm__ __volatile__ ("fence" ::: "memory"); \
     })
 
 
