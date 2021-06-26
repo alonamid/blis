@@ -65,6 +65,8 @@ void bli_sswapv_hwacha
 		return;
 	}
 
+        MEMTOUCH(y, float, n*incy);
+        MEMTOUCH(x, float, n*incx);
 	dim_t offset = 0;
 	__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 2, 0, 1)));
 	int vlen_result;
@@ -74,8 +76,8 @@ void bli_sswapv_hwacha
 	{
 		for ( dim_t i = n; i > 0;)
 		{
-            		MEMTOUCH(y+offset, float, vlen_result);
-            		MEMTOUCH(x+offset, float, vlen_result);
+            		//MEMTOUCH(y+offset, float, vlen_result);
+            		//MEMTOUCH(x+offset, float, vlen_result);
 			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
 			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
 			vf(&bli_sswapv_unit_hwacha_vf_main);
@@ -90,8 +92,8 @@ void bli_sswapv_hwacha
 		__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
 		for ( dim_t i = n; i > 0;)
 		{
-            		MEMTOUCH(y+offset*incy, float, vlen_result*incy);
-            		MEMTOUCH(x+offset*incx, float, vlen_result*incx);
+            		//MEMTOUCH(y+offset*incy, float, vlen_result*incy);
+            		//MEMTOUCH(x+offset*incx, float, vlen_result*incx);
 			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset*incy));
 			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset*incx));
 			vf(&bli_sswapv_stride_hwacha_vf_main);
