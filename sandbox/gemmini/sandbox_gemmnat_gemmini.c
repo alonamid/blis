@@ -37,6 +37,20 @@
 #include "blix.h"
 #include "include/gemmini.h"
 
+#define MEMTOUCH(iaddr, type, bound) ({                           \
+      volatile type* addr = iaddr;                                \
+      volatile type t;                                            \
+      t = (addr)[0];                                              \
+      (addr)[0] = t;                                              \
+      volatile type* tf = (type*) (((((uintptr_t) (addr)) >> 12) + 1) << 12);    \
+      for (; tf - (addr) < bound; tf += (1 << 12) / sizeof(type)) {     \
+        t = tf[0];                                                      \
+        tf[0] = t;                                                      \
+      }                                                                 \
+      __asm__ __volatile__ ("fence" ::: "memory"); \
+    })
+
+
 // Given the current architecture of BLIS sandboxes, bli_gemmnat() is the
 // entry point to any sandbox implementation.
 
@@ -143,9 +157,11 @@ void bli_gemmnat
 		return;
 	}
 
-
-	if (dt == BLIS_FLOAT && cs_a == 1 && cs_b == 1)
+	if (dt == BLIS_FLOAT && cs_a == 1 && cs_b == 1 && cs_c == 1)
 	{
+		MEMTOUCH(buf_a, float, m*rs_a);
+		MEMTOUCH(buf_b, float, k*rs_b);
+		MEMTOUCH(buf_c, float, m*rs_c);
 		if ( atrans && btrans )
 	        {
 			tiled_matmul_auto(m, n, k,
@@ -158,7 +174,7 @@ void bli_gemmnat
 					true, false,
 					1,
 					WS);
-		} 
+		}
 		else
 		{
 			tiled_matmul_auto(m, n, k,
@@ -172,10 +188,55 @@ void bli_gemmnat
 					1,
 					WS);
 		}
-	} else {	
+	}
+	else if (dt == BLIS_FLOAT && rs_a == 1 && rs_b == 1 && rs_c == 1)
+	{
+		MEMTOUCH(buf_a, float, k*cs_a);
+		MEMTOUCH(buf_b, float, n*cs_b);
+		MEMTOUCH(buf_c, float, n*cs_c);
+		if ( atrans && btrans )
+	        {
+			tiled_matmul_auto(n, m, k,
+					(float*)buf_a, (float*)buf_b,
+					(float*)buf_c, (float*)buf_c,
+					cs_a, cs_b, cs_c, cs_c,
+					*((float*)buf_alpha), MVIN_SCALE_IDENTITY, *((float*)buf_beta),
+					NO_ACTIVATION, ACC_SCALE_IDENTITY, 0, false,
+					false, false,
+					true, false,
+					1,
+					WS);
+		} 
+		else
+		{
+			tiled_matmul_auto(n, m, k,
+					(float*)buf_b, (float*)buf_a,
+					(float*)buf_c, (float*)buf_c,
+					cs_b, cs_a, cs_c, cs_c,
+					*((float*)buf_alpha), MVIN_SCALE_IDENTITY, *((float*)buf_beta),
+					NO_ACTIVATION, ACC_SCALE_IDENTITY, 0, false,
+					btrans, atrans,
+					true, false,
+					1,
+					WS);
+		}
+	} else {
+                bli_gemm_front
+                (
+                  alpha,
+                  a,
+                  b,
+                  beta,
+                  c,
+                  cntx,
+                  rntm,
+                  NULL
+                );
+/*
 		blx_gemm_ref_var2( BLIS_NO_TRANSPOSE,
 					alpha, a, b, beta, c,
 					BLIS_XXX, cntx, rntm, NULL );
+*/
 	}
 }
 
