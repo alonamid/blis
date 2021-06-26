@@ -52,6 +52,14 @@ void bli_syrk_front
 	obj_t   at_local;
 	obj_t   c_local;
 
+ //if (bli_obj_length( c ) == bli_obj_length( a ))
+ //  printf("SYRK,%lu,%lu,%lu\n", bli_obj_length( c ), bli_obj_width( c ), bli_obj_width( a ));
+ //else
+ //  printf("SYRK,%lu,%lu,%lu\n", bli_obj_length( c ), bli_obj_width( c ), bli_obj_length( a ));
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
+        if (bli_obj_dt( a ) == BLIS_FLOAT)
+          bli_cntx_set_lowprec_start(cntx, 1);
+#endif
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
         if (bli_obj_dt( a ) == BLIS_FLOAT)
                 bli_cntx_set_lowprec_in_use(cntx, 1);
@@ -133,6 +141,9 @@ void bli_syrk_front
 	  cntl
 	);
 
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
+        __asm__ volatile("fence");
+#endif
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
         if (bli_obj_dt( a ) == BLIS_FLOAT)
                 bli_cntx_set_lowprec_in_use(cntx, 0);

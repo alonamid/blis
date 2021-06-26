@@ -54,6 +54,9 @@ void bli_syr2k_front
 	obj_t    b_local;
 	obj_t    at_local;
 
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
+        bli_cntx_set_lowprec_start(cntx, 1);
+#endif
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
         if (bli_obj_dt( a ) == BLIS_FLOAT)
                 bli_cntx_set_lowprec_in_use(cntx, 1);
@@ -149,6 +152,9 @@ void bli_syr2k_front
 	  cntl
 	);
 
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
+        __asm__ volatile("fence");
+#endif
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
         if (bli_obj_dt( a ) == BLIS_FLOAT)
                 bli_cntx_set_lowprec_in_use(cntx, 0);

@@ -53,6 +53,13 @@ void bli_trmm3_front
 	obj_t   b_local;
 	obj_t   c_local;
 
+        //if (bli_obj_length( c ) == bli_obj_length( a ))
+        //  printf("TRMM3,%lu,%lu,%lu\n", bli_obj_length( c ), bli_obj_width( c ), bli_obj_width( a ));
+        //else
+        //  printf("TRMM3,%lu,%lu,%lu\n", bli_obj_length( c ), bli_obj_width( c ), bli_obj_length( a ));
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
+        bli_cntx_set_lowprec_start(cntx, 1);
+#endif
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
         if (bli_obj_dt( a ) == BLIS_FLOAT)
                 bli_cntx_set_lowprec_in_use(cntx, 1);
@@ -191,6 +198,9 @@ void bli_trmm3_front
 	  cntl
 	);
 
+#if defined(BLIS_CONFIG_GEMMINI) || defined(BLIS_CONFIG_GEMMINIHWACHA)
+        __asm__ volatile("fence");
+#endif
 #ifdef ELEM_T_IS_LOWPREC_FLOAT
         if (bli_obj_dt( a ) == BLIS_FLOAT)
                 bli_cntx_set_lowprec_in_use(cntx, 0);
