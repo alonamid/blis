@@ -57,6 +57,28 @@ void bli_spackm_hwacha_cxk
      )
 {
 
+/*
+    if (n < HWACHA_MIN_DIM)
+    {
+#if defined(BLIS_CONFIG_GEMMINIHWACHA)
+        bli_spackm_gemmini_cxk
+#else
+        bli_spackm_4xk_hwacha_ref
+#endif
+        (
+          conja,
+          schema,
+          cdim,
+          n,
+          n_max,
+          kappa,
+          a, inca, lda,
+          p, ldp,
+          cntx
+        );
+        return;
+    }
+*/
     //TODO: this should be in the blis context initialization
     __asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 2, 1, 1)));
     int vlen_result;
@@ -68,6 +90,8 @@ void bli_spackm_hwacha_cxk
 
     dim_t           mnr        = bli_cntx_get_blksz_def_dt( BLIS_FLOAT, BLIS_MR, cntx );;
 
+    MEMTOUCH(alpha1, float, n_max*lda);
+    MEMTOUCH(pi1, float, n_max*ldp);
 
     if ( cdim == mnr ) //the "standard" case for packing, where a big matrix needs to be packed into panels
     {
@@ -79,7 +103,8 @@ void bli_spackm_hwacha_cxk
         {
           for (dim_t k = n; k != 0; --k)
           {
-            MEMTOUCH(pi1, float, vlen_result);
+            //MEMTOUCH(alpha1, float, vlen_result*inca);
+            //MEMTOUCH(pi1, float, vlen_result);
             __asm__ volatile ("vmca va0,  %0" : : "r" (pi1));
             __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
             __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -95,7 +120,8 @@ void bli_spackm_hwacha_cxk
 	  {
             for (dim_t k = n; k != 0; --k)
             {
-              MEMTOUCH(pi1_lp, float, vlen_result);
+              //MEMTOUCH(alpha1, float, vlen_result*inca);
+              //MEMTOUCH(pi1_lp, elem_t, vlen_result);
               __asm__ volatile ("vmca va0,  %0" : : "r" (pi1_lp));
               __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
               __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -109,7 +135,8 @@ void bli_spackm_hwacha_cxk
           {
             for (dim_t k = n; k != 0; --k)
             {
-              MEMTOUCH(pi1, float, vlen_result);
+              //MEMTOUCH(alpha1, float, vlen_result*inca);
+              //MEMTOUCH(pi1, float, vlen_result);
               __asm__ volatile ("vmca va0,  %0" : : "r" (pi1));
               __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
               __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -127,7 +154,8 @@ void bli_spackm_hwacha_cxk
 	{
           for (dim_t k = n; k != 0; --k)
           {
-            MEMTOUCH(pi1_lp, float, vlen_result);
+            //MEMTOUCH(alpha1, float, vlen_result*inca);
+            //MEMTOUCH(pi1_lp, elem_t, vlen_result);
             __asm__ volatile ("vmca va0,  %0" : : "r" (pi1_lp));
             __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
             __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -142,7 +170,8 @@ void bli_spackm_hwacha_cxk
         {
           for (dim_t k = n; k != 0; --k)
           {
-            MEMTOUCH(pi1, float, vlen_result);
+            //MEMTOUCH(alpha1, float, vlen_result*inca);
+            //MEMTOUCH(pi1, float, vlen_result);
             __asm__ volatile ("vmca va0,  %0" : : "r" (pi1));
             __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
             __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -165,7 +194,8 @@ void bli_spackm_hwacha_cxk
         {
           for (dim_t k = n; k != 0; --k)
           {
-            MEMTOUCH(pi1_lp, float, vlen_result);
+            //MEMTOUCH(alpha1, float, vlen_result*inca);
+            //MEMTOUCH(pi1_lp, elem_t, vlen_result);
             __asm__ volatile ("vmca va0,  %0" : : "r" (pi1_lp));
             __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
             __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -180,7 +210,8 @@ void bli_spackm_hwacha_cxk
         {
           for (dim_t k = n; k != 0; --k)
           {
-            MEMTOUCH(pi1, float, vlen_result);
+            //MEMTOUCH(alpha1, float, vlen_result*inca);
+            //MEMTOUCH(pi1, elem_t, vlen_result);
             __asm__ volatile ("vmca va0,  %0" : : "r" (pi1));
             __asm__ volatile ("vmca va1,  %0" : : "r" (alpha1));
             __asm__ volatile ("vmca va2,  %0" : : "r" (inca*sizeof(float)));
@@ -208,7 +239,7 @@ void bli_spackm_hwacha_cxk
         elem_t* restrict p_edge_lp = (elem_t*)p_cast + (i  )*1;
         for ( dim_t jj = 0; jj < n_edge; ++jj ) {
           __asm__ volatile ("vmca va0,  %0" : : "r" (p_edge_lp + jj*ldp));
-          MEMTOUCH(p_edge_lp + jj*ldp, float, vlen_result);
+          //MEMTOUCH(p_edge_lp + jj*ldp, elem_t, vlen_result);
           vf(bli_packm_hwacha_vf_sset0);
         }
       }
@@ -237,7 +268,7 @@ void bli_spackm_hwacha_cxk
       elem_t* restrict p_edge_lp = (elem_t*)p_cast + (j  )*ldp;
       for ( dim_t jj = 0; jj < n_edge; ++jj ) {
         __asm__ volatile ("vmca va0,  %0" : : "r" (p_edge_lp + jj*ldp));
-        MEMTOUCH(p_edge_lp + jj*ldp, float, vlen_result);
+        //MEMTOUCH(p_edge_lp + jj*ldp, elem_t, vlen_result);
         vf(bli_packm_hwacha_vf_sset0);
       }
     }
@@ -250,4 +281,5 @@ void bli_spackm_hwacha_cxk
 #if defined(BLIS_CONFIG_GEMMINIHWACHA)
   __asm__ volatile ("fence" ::: "memory");
 #endif
+
 }
