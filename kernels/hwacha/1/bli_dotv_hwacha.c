@@ -77,6 +77,8 @@ void bli_sdotv_hwacha
 		return;
 	}
 
+        MEMTOUCH(y, float, n*incy);
+        MEMTOUCH(x, float, n*incx);
 	dim_t offset = 0;
 	__asm__ volatile ("vsetcfg %0" : : "r" (VCFG(0, 3, 0, 1)));
 	int vlen_result;
@@ -88,8 +90,8 @@ void bli_sdotv_hwacha
 	{
 		for ( dim_t i = n; i > 0;)
 		{
-            		MEMTOUCH(y+offset, float, vlen_result);
-            		MEMTOUCH(x+offset, float, vlen_result);
+            		//MEMTOUCH(y+offset, float, vlen_result);
+            		//MEMTOUCH(x+offset, float, vlen_result);
 			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset));
 			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset));
 			vf(&bli_sdotv_unit_hwacha_vf_loop);
@@ -104,8 +106,8 @@ void bli_sdotv_hwacha
 		__asm__ volatile ("vmca va3,  %0" : : "r" (incx*sizeof(float)));
 		for ( dim_t i = n; i > 0;)
 		{
-            		MEMTOUCH(y+offset*incy, float, vlen_result*incy);
-            		MEMTOUCH(x+offset*incx, float, vlen_result*incx);
+            		//MEMTOUCH(y+offset*incy, float, vlen_result*incy);
+            		//MEMTOUCH(x+offset*incx, float, vlen_result*incx);
 			__asm__ volatile ("vmca va0,  %0" : : "r" (y+offset*incy));
 			__asm__ volatile ("vmca va1,  %0" : : "r" (x+offset*incx));
 			vf(&bli_sdotv_stride_hwacha_vf_loop);
@@ -114,6 +116,7 @@ void bli_sdotv_hwacha
 	  		__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (i));
 		}
 	}
+
 
 	float reduction_buffer[(SMAXVL>>1)+1] = {0};	
 	__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (acc_n));
@@ -144,4 +147,18 @@ void bli_sdotv_hwacha
 	__asm__ volatile ("fence" ::: "memory");
 	*rho = reduction_buffer[0] + reduction_remainder;
 
+
+//scalar reduction alternative
+/*
+	float reduction_buffer[(SMAXVL>>1)+1];	
+	__asm__ volatile ("vsetvl %0, %1" : "=r" (vlen_result) : "r" (acc_n));
+	__asm__ volatile ("vmca va4,  %0" : : "r" (reduction_buffer));
+	vf(&bli_sdotv_hwacha_vf_post);
+	__asm__ volatile ("fence" ::: "memory");
+	*rho = 0;
+	for ( dim_t i = 0; i > n; i++)
+	{
+		*rho += reduction_buffer[i];
+	}
+*/
 }
